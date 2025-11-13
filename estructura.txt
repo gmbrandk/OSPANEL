@@ -1,0 +1,64 @@
+├── .gitignore
+├── README.md
+├── eslint.config.js
+├── estructura.txt
+├── file_tree.py
+├── index.html
+├── node_modules
+│   └── ... (contenido omitido)
+├── package-lock.json
+├── package.json
+├── public
+│   └── vite.svg
+├── setup-form-ingreso.ps1
+├── src
+│   ├── App.css
+│   ├── App.jsx
+│   ├── __mock__
+│   │   └── form-ingreso
+│   │       ├── clientes.js
+│   │       ├── equipos.js
+│   │       ├── index.js
+│   │       ├── tecnicos.js
+│   │       └── tipos-trabajo.js
+│   ├── assets
+│   │   ├── form-ingreso
+│   │   │   └── dropdown-arrow.svg
+│   │   └── react.svg
+│   ├── components
+│   │   └── form-ingreso
+│   │       ├── Autocomplete.jsx
+│   │       ├── ClienteSection.jsx
+│   │       ├── Collapsible.jsx
+│   │       ├── EquipoSection.jsx
+│   │       ├── FichaTecnica.jsx
+│   │       ├── FormIngreso.jsx
+│   │       ├── LineaServicio.jsx
+│   │       ├── OrdenServicioSection.jsx
+│   │       ├── TecnicoSection.jsx
+│   │       └── index.js
+│   ├── docs
+│   │   └── form-ingreso.md
+│   ├── hooks
+│   │   └── form-ingreso
+│   │       ├── useAutocompleteCliente.js
+│   │       ├── useAutocompleteEquipo.js
+│   │       ├── useAutocompleteTecnico.js
+│   │       ├── useAutocompleteTipoTrabajo.js
+│   │       ├── useCollapsible.js
+│   │       ├── useLineasServicio.js
+│   │       └── useSummary.js
+│   ├── index.css
+│   ├── main.jsx
+│   └── styles
+│       └── form-ingreso
+│           ├── autocomplete.css
+│           ├── base.css
+│           ├── buttons.css
+│           ├── fieldset.css
+│           ├── index.css
+│           ├── inputs.css
+│           ├── layout.css
+│           ├── linea-servicio.css
+│           └── telefono.css
+└── vite.config.js

@@ -1,0 +1,61 @@
+.linea-servicio {
+  display: grid !important;
+  grid-template-columns:
+    2fr
+    2fr
+    120px
+    45px;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  padding: 6px 0;
+  margin-bottom: 5px;
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.linea-servicio .col {
+  padding: 0 !important;
+  margin: 0 !important;
+  display: block !important;
+}
+
+.linea-servicio label {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 2px;
+}
+
+.linea-servicio .input-field {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.linea-servicio [data-precio] {
+  text-align: right;
+  min-width: 100px;
+  max-width: 120px;
+}
+
+.linea-servicio .button-delete {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: #e74c3c !important;
+  border: none;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+}
+
+.linea-servicio .button-delete:hover {
+  background: #e74c3c !important;
+  box-shadow: 0 0 0 2px white, 0 0 0 3px #e74c3c !important;
+}
