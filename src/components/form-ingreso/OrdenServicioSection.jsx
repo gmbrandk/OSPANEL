@@ -8,7 +8,7 @@ import { LineaServicio } from './LineaServicio';
 
 export function OrdenServicio() {
   const { tecnico, setTecnico, orden, setOrden } = useIngresoForm();
-  console.log('Orden actual:', orden);
+  console.log('[ORDENSERVICIO] Orden actual:', orden);
 
   const {
     query,

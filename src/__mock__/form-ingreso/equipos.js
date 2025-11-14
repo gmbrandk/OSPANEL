@@ -1,7 +1,7 @@
 // equipos.js - mock de datos de formulario de ingreso
 export const equiposMock = [
   {
-    id: 'eq1',
+    _id: 'eq1',
     marca: 'Dell',
     modelo: 'XPS 15 9570',
     nroSerie: 'DXPS15A12345',
@@ -11,7 +11,7 @@ export const equiposMock = [
     almacenamiento: '512GB SSD',
   },
   {
-    id: 'eq2',
+    _id: 'eq2',
     marca: 'HP',
     modelo: 'Pavilion 14',
     nroSerie: 'HPV14Z99881',
@@ -21,7 +21,7 @@ export const equiposMock = [
     almacenamiento: '256GB SSD',
   },
   {
-    id: 'eq3',
+    _id: 'eq3',
     marca: 'Lenovo',
     modelo: 'ThinkPad T480',
     nroSerie: 'LTP480XY3321',

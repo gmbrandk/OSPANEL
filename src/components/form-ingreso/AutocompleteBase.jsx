@@ -14,7 +14,6 @@ export function AutocompleteBase({
   renderItem,
   inputName,
   onFocus,
-  value, // ✅ nuevo prop
 }) {
   return (
     <div className="col autocomplete-container">
@@ -27,7 +26,7 @@ export function AutocompleteBase({
             name={inputName}
             type="text"
             className="input-field autocomplete-input"
-            value={value ?? query}
+            value={query}
             onChange={(e) => onChange(e.target.value)}
             onBlur={() => setTimeout(cerrarResultados, 150)}
             onFocus={onFocus}
@@ -51,7 +50,7 @@ export function AutocompleteBase({
           <div className="autocomplete-list">
             {resultados.map((item) => (
               <div
-                key={item.id || item._id}
+                key={item._id || item.id}
                 className="autocomplete-item"
                 onMouseDown={() => onSelect(item)}
               >
@@ -68,7 +67,7 @@ export function AutocompleteBase({
 AutocompleteBase.propTypes = {
   label: PropTypes.string,
   placeholder: PropTypes.string,
-  query: PropTypes.string.isRequired,
+  query: PropTypes.string.isRequired, // 👈 EL ÚNICO value real
   onChange: PropTypes.func.isRequired,
   onToggle: PropTypes.func.isRequired,
   resultados: PropTypes.array.isRequired,
@@ -78,5 +77,4 @@ AutocompleteBase.propTypes = {
   renderItem: PropTypes.func,
   inputName: PropTypes.string,
   onFocus: PropTypes.func,
-  value: PropTypes.string, // ✅ nuevo propType
 };

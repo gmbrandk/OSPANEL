@@ -1,17 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAutocompleteTipoTrabajo } from '../../hooks/form-ingreso/useAutocompleteTipoTrabajo.js';
 import { SelectAutocomplete } from './SelectAutocomplete.jsx';
 
 export function LineaServicio({ index, data = {}, onDelete, onChange }) {
-  useEffect(() => {
-    console.log(
-      `%c[LineaServicio] 🧾 Línea #${index} montada con data:`,
-      'color: #0af',
-      data
-    );
-  }, [index, data]);
-
-  // Hook con soporte para valor inicial
+  // ================================
+  // AUTOCOMPLETE
+  // ================================
   const {
     query,
     resultados,
@@ -29,39 +23,63 @@ export function LineaServicio({ index, data = {}, onDelete, onChange }) {
       : null
   );
 
+  // ================================
+  // DESCRIPCIÓN (con control de usuario)
+  // ================================
   const [localDescripcion, setLocalDescripcion] = useState(
     data.descripcion || ''
   );
-  const [localPrecio, setLocalPrecio] = useState(data.precioUnitario || '');
+  const [userEditedDescripcion, setUserEditedDescripcion] = useState(false);
 
-  // 🧠 Cuando el usuario selecciona un tipo de trabajo del autocompletado
+  // Precio original
+  const precioOriginalRef = useRef(null);
+
+  // ================================
+  // CUANDO CAMBIA EL TIPO DE TRABAJO
+  // ================================
   useEffect(() => {
-    if (selectedTrabajo) {
-      setLocalDescripcion(selectedTrabajo.categoria);
-      setLocalPrecio(selectedTrabajo.precioBase);
+    if (!selectedTrabajo) return;
 
-      onChange(index, {
-        tipoTrabajo: selectedTrabajo,
-        descripcion: selectedTrabajo.categoria,
-        precioUnitario: selectedTrabajo.precioBase,
-      });
-    }
-  }, [selectedTrabajo, index, onChange]);
+    const nuevaDescripcion = !userEditedDescripcion
+      ? selectedTrabajo.descripcion?.trim() ||
+        selectedTrabajo.nombre?.trim() ||
+        ''
+      : localDescripcion;
 
-  // 🔄 Cuando se escribe manualmente un nuevo tipo de trabajo
-  useEffect(() => {
-    if (!selectedTrabajo && query) {
-      onChange(index, {
-        tipoTrabajo: query,
-      });
-    }
-  }, [query, selectedTrabajo, index, onChange]);
+    const nuevoPrecio = data.precioUnitario ?? selectedTrabajo.precioBase ?? '';
 
-  // 🔄 Si el padre actualiza la data
+    precioOriginalRef.current = nuevoPrecio;
+
+    setLocalDescripcion(nuevaDescripcion);
+
+    onChange(index, {
+      tipoTrabajo: selectedTrabajo,
+      descripcion: nuevaDescripcion,
+      precioUnitario: nuevoPrecio,
+    });
+  }, [selectedTrabajo]);
+
+  // ================================
+  // CUANDO BACKEND ACTUALIZA DESCRIPCIÓN
+  // ================================
   useEffect(() => {
     setLocalDescripcion(data.descripcion || '');
-    setLocalPrecio(data.precioUnitario || '');
-  }, [data]);
+  }, [data.descripcion]);
+
+  // ================================
+  // VALORES DERIVADOS
+  // ================================
+  const precioActual = data.precioUnitario ?? '';
+  const precioOriginal = precioOriginalRef.current;
+
+  const precioModificado =
+    precioOriginal !== null &&
+    precioActual !== '' &&
+    Number(precioActual) !== Number(precioOriginal);
+
+  const precioClass = precioModificado
+    ? 'input-field precio-modificado'
+    : 'input-field';
 
   return (
     <div className="row linea-servicio" style={{ marginTop: '10px' }}>
@@ -81,7 +99,7 @@ export function LineaServicio({ index, data = {}, onDelete, onChange }) {
           <>
             <div className="autocomplete-title">{t.nombre}</div>
             <div className="autocomplete-sub">
-              S/{t.precioBase} — {t.categoria} — {t.tipo}
+              S/{t.precioBase} — {t.descripcion || ''} — {t.tipo}
             </div>
           </>
         )}
@@ -92,11 +110,11 @@ export function LineaServicio({ index, data = {}, onDelete, onChange }) {
         <label>Descripción</label>
         <input
           type="text"
-          name="descripcion"
           className="input-field"
           value={localDescripcion}
           onChange={(e) => {
             const val = e.target.value;
+            setUserEditedDescripcion(true);
             setLocalDescripcion(val);
             onChange(index, { descripcion: val });
           }}
@@ -104,21 +122,44 @@ export function LineaServicio({ index, data = {}, onDelete, onChange }) {
       </div>
 
       {/* Precio */}
-      <div className="col">
-        <label>Precio</label>
-        <input
-          type="number"
-          className="input-field"
-          value={localPrecio}
-          onChange={(e) => {
-            const v = Number(e.target.value);
-            setLocalPrecio(v);
-            onChange(index, { precioUnitario: v });
-          }}
-        />
+      <div className="col precio-col">
+        <label>
+          Precio{' '}
+          {precioModificado && (
+            <span className="badge-modificado">Modificado</span>
+          )}
+        </label>
+
+        <div
+          className="precio-wrapper"
+          title={
+            precioOriginal != null ? `Precio original: S/${precioOriginal}` : ''
+          }
+        >
+          <input
+            type="number"
+            className={precioClass}
+            value={precioActual}
+            min="0"
+            step="0.1"
+            onChange={(e) => {
+              let v = e.target.value;
+
+              if (v === '') {
+                onChange(index, { precioUnitario: '' });
+                return;
+              }
+
+              const num = Number(v);
+              if (Number.isNaN(num) || num < 0) return;
+
+              onChange(index, { precioUnitario: num });
+            }}
+          />
+        </div>
       </div>
 
-      {/* Eliminar línea */}
+      {/* Eliminar */}
       <div className="col" style={{ width: '50px' }}>
         <button
           type="button"

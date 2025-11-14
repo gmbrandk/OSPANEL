@@ -45,7 +45,7 @@ export async function mockGetOrdenServicioById(id) {
             nombre: 'Cambio de pantalla',
           },
           descripcion: 'Reemplazo completo de pantalla LCD',
-          precioUnitario: 350,
+          precioUnitario: 260,
           cantidad: 1,
         },
       ],
@@ -53,7 +53,7 @@ export async function mockGetOrdenServicioById(id) {
         'Cliente indica que la laptop dejó de encender después de una caída.',
       observaciones: 'Equipo con carcasa rota en la esquina superior derecha.',
       fechaIngreso: '2025-11-13T01:58:57.745Z',
-      total: 390,
+      total: 300,
     },
   };
 }

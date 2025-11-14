@@ -1,7 +1,7 @@
 // clientes.js - mock de datos de formulario de ingreso
 export const clientesMock = [
   {
-    id: 'c1',
+    _id: 'c1',
     dni: '45724467',
     nombres: 'JORGE ENRIQUE',
     apellidos: 'UGARTE OLIVERA',
@@ -10,7 +10,7 @@ export const clientesMock = [
     direccion: 'Av. Lima 123',
   },
   {
-    id: 'c2',
+    _id: 'c2',
     dni: '88991234',
     nombres: 'MARIA',
     apellidos: 'QUISPE HUAMAN',

@@ -4,7 +4,7 @@ import { AutocompleteBase } from './AutocompleteBase.jsx';
 export function SelectAutocomplete({
   label,
   placeholder,
-  query,
+  query, // el texto que se muestra SIEMPRE viene del hook
   onChange,
   resultados,
   isOpen,
@@ -13,13 +13,12 @@ export function SelectAutocomplete({
   renderItem,
   inputName,
   abrirResultados,
-  value,
 }) {
   return (
     <AutocompleteBase
       label={label}
       placeholder={placeholder}
-      value={value}
+      value={query} // 👈 "value" SIEMPRE = query (no usar otra cosa)
       query={query}
       onChange={onChange}
       resultados={resultados}
@@ -28,7 +27,7 @@ export function SelectAutocomplete({
       cerrarResultados={cerrarResultados}
       renderItem={renderItem}
       inputName={inputName}
-      onFocus={() => abrirResultados()}
+      onFocus={abrirResultados}
       onToggle={() => (isOpen ? cerrarResultados() : abrirResultados())}
     />
   );

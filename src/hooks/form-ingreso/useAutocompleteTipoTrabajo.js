@@ -7,34 +7,42 @@ export function useAutocompleteTipoTrabajo(initialValue = null) {
   const [selectedTrabajo, setSelectedTrabajo] = useState(null);
 
   // ======================================================
-  // 🔄 Inicializar con valor preexistente
+  // 🔄 Inicializar correctamente con datos del backend
   // ======================================================
   useEffect(() => {
-    if (initialValue) {
-      if (typeof initialValue === 'object' && initialValue.nombre) {
-        setSelectedTrabajo(initialValue);
-        setQuery(initialValue.nombre);
-      } else if (typeof initialValue === 'string') {
-        const found = tiposTrabajoMock.find(
-          (t) => t.nombre.toLowerCase() === initialValue.toLowerCase()
-        );
-        if (found) {
-          setSelectedTrabajo(found);
-          setQuery(found.nombre);
-        } else {
-          // Si no está en el mock, se permite texto libre
-          setQuery(initialValue);
-        }
+    if (!initialValue) return;
+
+    // Caso: viene un objeto tipoTrabajo del backend
+    if (typeof initialValue === 'object' && initialValue.nombre) {
+      setSelectedTrabajo(initialValue);
+      setQuery(initialValue.nombre);
+      return;
+    }
+
+    // Caso: viene un string (texto libre) o nombre exacto
+    if (typeof initialValue === 'string') {
+      const found = tiposTrabajoMock.find(
+        (t) => t.nombre.toLowerCase() === initialValue.toLowerCase()
+      );
+
+      if (found) {
+        setSelectedTrabajo(found);
+        setQuery(found.nombre);
+      } else {
+        // Si no existe en el catálogo → es texto libre
+        setQuery(initialValue);
+        setSelectedTrabajo(null);
       }
     }
   }, [initialValue]);
 
   // ======================================================
-  // 🔍 Filtrado de resultados
+  // 🔍 Filtrar resultados según query
   // ======================================================
   const resultados = useMemo(() => {
-    if (!query.trim()) return tiposTrabajoMock;
-    const q = query.toLowerCase();
+    const q = query.trim().toLowerCase();
+    if (!q) return tiposTrabajoMock;
+
     return tiposTrabajoMock.filter(
       (t) =>
         t.nombre.toLowerCase().includes(q) ||
@@ -43,17 +51,19 @@ export function useAutocompleteTipoTrabajo(initialValue = null) {
   }, [query]);
 
   // ======================================================
-  // 🧭 Acciones
+  // 🧭 Acciones del autocompletado
   // ======================================================
   const abrirResultados = () => setIsOpen(true);
   const cerrarResultados = () => setIsOpen(false);
 
+  // Texto libre del input
   const onChange = (value) => {
     setQuery(value);
-    setSelectedTrabajo(null); // ← Permitir texto libre
+    setSelectedTrabajo(null); // ← deja de estar seleccionado
     abrirResultados();
   };
 
+  // Usuario hace clic en un item del autocomplete
   const seleccionarTrabajo = (trabajo) => {
     setSelectedTrabajo(trabajo);
     setQuery(trabajo.nombre);
