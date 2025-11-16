@@ -15,6 +15,11 @@ function IngresoFormContent({ onSubmit }) {
   const { cliente, equipo, tecnico, orden } = useIngresoForm();
 
   const handleSubmit = (e) => {
+    console.log('CLIENTE:', cliente);
+    console.log('EQUIPO:', equipo);
+    console.log('TECNICO:', tecnico);
+    console.log('ORDEN:', orden);
+
     e.preventDefault();
 
     const payload = { cliente, equipo, tecnico, orden };

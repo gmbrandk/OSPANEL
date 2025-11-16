@@ -42,10 +42,10 @@ export default function Collapsible({
   useLayoutEffect(() => {
     if (!isControlledByGroup) return;
 
-    console.log(
-      `%c[COLLAPSIBLE] 🧩 Registrando "${title}" (index: ${index})`,
-      'color: #0ff'
-    );
+    // console.log(
+    //   `%c[COLLAPSIBLE] 🧩 Registrando "${title}" (index: ${index})`,
+    //   'color: #0ff'
+    // );
 
     group.registerCollapsible(title, index, {
       setOpen,
@@ -85,7 +85,7 @@ export default function Collapsible({
   };
 
   const handleClick = () => {
-    console.log(`%c[COLLAPSIBLE] ⚪️ Click en "${title}"`, 'color: #ccc');
+    // console.log(`%c[COLLAPSIBLE] ⚪️ Click en "${title}"`, 'color: #ccc');
     toggle();
   };
 

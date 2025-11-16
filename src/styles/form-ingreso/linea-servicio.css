@@ -55,6 +55,22 @@
   min-width: 40px;
 }
 
+.linea-servicio .button-reset {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: #3c3fe7 !important;
+  border: none;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+}
+
 .linea-servicio .button-delete:hover {
   background: #e74c3c !important;
   box-shadow: 0 0 0 2px white, 0 0 0 3px #e74c3c !important;

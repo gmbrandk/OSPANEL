@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useReducer,
-} from 'react';
+import { createContext, useCallback, useContext, useReducer } from 'react';
 
 /* ===========================================================
    🧠 Contexto y reducer para manejar los Collapsibles
@@ -27,17 +21,17 @@ function groupReducer(state, action) {
 
     case 'OPEN': {
       const { id, index } = action.payload;
-      console.log(
-        `%c[GROUP] 🔵 "${id}" se abrió → cerrando previos`,
-        'color: #39f'
-      );
+      // console.log(
+      //   `%c[GROUP] 🔵 "${id}" se abrió → cerrando previos`,
+      //   'color: #39f'
+      // );
 
       const updated = state.collapsibles.map((col) => {
         if (col.index < index && col.main && !col.openedByUser.current) {
-          console.log(
-            `%c[GROUP] 🔴 Cerrando anterior: "${col.id}" (deferido)`,
-            'color: #f55'
-          );
+          // console.log(
+          //   `%c[GROUP] 🔴 Cerrando anterior: "${col.id}" (deferido)`,
+          //   'color: #f55'
+          // );
 
           // ✅ Diferir el cierre para evitar setState durante render
           requestAnimationFrame(() => {
@@ -63,10 +57,10 @@ export function CollapsibleGroupProvider({ children }) {
 
   const registerCollapsible = useCallback((id, index, api) => {
     dispatch({ type: 'REGISTER', payload: { id, index, ...api } });
-    console.log(
-      `%c[GROUP] 📋 Registrado collapsible: "${id}" (index: ${index}, main: ${api.main})`,
-      'color: #0ff'
-    );
+    // console.log(
+    //   `%c[GROUP] 📋 Registrado collapsible: "${id}" (index: ${index}, main: ${api.main})`,
+    //   'color: #0ff'
+    // );
   }, []);
 
   const registerOpen = useCallback((id, index) => {
@@ -74,13 +68,13 @@ export function CollapsibleGroupProvider({ children }) {
   }, []);
 
   // 🔍 Log de diagnóstico (opcional)
-  useEffect(() => {
-    console.log(
-      '%c[GROUP] 🧠 Estado actual:',
-      'color: #bbb',
-      state.collapsibles
-    );
-  }, [state.collapsibles]);
+  // useEffect(() => {
+  //   console.log(
+  //     '%c[GROUP] 🧠 Estado actual:',
+  //     'color: #bbb',
+  //     state.collapsibles
+  //   );
+  // }, [state.collapsibles]);
 
   const value = { registerCollapsible, registerOpen };
 

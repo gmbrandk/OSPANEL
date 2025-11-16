@@ -64,26 +64,26 @@ export function useCollapsible({
       // Estado inicial sin animación
       el.style.maxHeight = isOpen ? 'none' : '0px';
       el.style.opacity = isOpen ? '1' : '0';
-      console.log(
-        `%c[HOOK] 🟢 "${title}" montado con estado inicial: ${
-          isOpen ? 'expanded' : 'collapsed'
-        }`,
-        'color:#7f7'
-      );
+      // console.log(
+      //   `%c[HOOK] 🟢 "${title}" montado con estado inicial: ${
+      //     isOpen ? 'expanded' : 'collapsed'
+      //   }`,
+      //   'color:#7f7'
+      // );
       return;
     }
 
-    console.log(
-      `%c[HOOK] 🔄 "${title}" ahora está ${isOpen ? 'abierto' : 'cerrado'}`,
-      'color:#0af'
-    );
+    // console.log(
+    //   `%c[HOOK] 🔄 "${title}" ahora está ${isOpen ? 'abierto' : 'cerrado'}`,
+    //   'color:#0af'
+    // );
 
     if (isOpen) expand(el);
     else collapse(el);
   }, [isOpen, expand, collapse, title, isFirst]);
 
   const toggle = useCallback(() => {
-    console.log(`%c[HOOK] ⚪️ toggle() llamado para "${title}"`, 'color:#ccc');
+    // console.log(`%c[HOOK] ⚪️ toggle() llamado para "${title}"`, 'color:#ccc');
     setIsOpen((prev) => {
       const next = !prev;
       if (next) openedByUser.current = true;

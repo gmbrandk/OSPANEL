@@ -1,11 +1,32 @@
 import { useEffect, useRef, useState } from 'react';
+import { useIngresoForm } from '../../context/IngresoFormContext';
 import { useAutocompleteTipoTrabajo } from '../../hooks/form-ingreso/useAutocompleteTipoTrabajo.js';
 import { SelectAutocomplete } from './SelectAutocomplete.jsx';
 
 export function LineaServicio({ index, data = {}, onDelete, onChange }) {
+  // Snapshot inicial (NO CAMBIA)
+  const initialRef = useRef(data);
+  const { updateLinea, deleteLinea, resetLinea, isLineaModificada } =
+    useIngresoForm();
+
+  const modificado = isLineaModificada(index);
+  // console.groupCollapsed(
+  //   `%c[LineaServicio] render index=${index}`,
+  //   'color:#00aaff;font-weight:bold'
+  // );
+  // console.log('data:', data);
+  // console.groupEnd();
+
   // ================================
   // AUTOCOMPLETE
   // ================================
+  const initialTrabajo =
+    typeof data.tipoTrabajo === 'object'
+      ? data.tipoTrabajo
+      : data.tipoTrabajo
+      ? { nombre: data.tipoTrabajo }
+      : null;
+
   const {
     query,
     resultados,
@@ -15,40 +36,65 @@ export function LineaServicio({ index, data = {}, onDelete, onChange }) {
     abrirResultados,
     cerrarResultados,
     seleccionarTrabajo,
-  } = useAutocompleteTipoTrabajo(
-    typeof data.tipoTrabajo === 'object'
-      ? data.tipoTrabajo
-      : data.tipoTrabajo
-      ? { nombre: data.tipoTrabajo }
-      : null
-  );
+  } = useAutocompleteTipoTrabajo(initialTrabajo);
 
   // ================================
-  // DESCRIPCIÓN (con control de usuario)
+  // DESCRIPCIÓN CONTROLADA
   // ================================
   const [localDescripcion, setLocalDescripcion] = useState(
-    data.descripcion || ''
+    data.descripcion ?? ''
   );
   const [userEditedDescripcion, setUserEditedDescripcion] = useState(false);
 
-  // Precio original
+  // Solo se guarda la primera vez
   const precioOriginalRef = useRef(null);
 
   // ================================
-  // CUANDO CAMBIA EL TIPO DE TRABAJO
+  // RESET
+  // ================================
+  const handleReset = () => {
+    const original = initialRef.current;
+
+    console.log(
+      '%c[LineaServicio] RESET → estado original:',
+      'color:#ff4444',
+      original
+    );
+
+    setLocalDescripcion(original.descripcion ?? '');
+    setUserEditedDescripcion(false);
+
+    onChange(index, {
+      tipoTrabajo: original.tipoTrabajo,
+      descripcion: original.descripcion ?? '',
+      precioUnitario: original.precioUnitario ?? 0,
+      cantidad: original.cantidad ?? 1,
+    });
+  };
+
+  // ================================
+  // CUANDO CAMBIA selectedTrabajo (autocomplete)
   // ================================
   useEffect(() => {
     if (!selectedTrabajo) return;
 
-    const nuevaDescripcion = !userEditedDescripcion
-      ? selectedTrabajo.descripcion?.trim() ||
-        selectedTrabajo.nombre?.trim() ||
-        ''
-      : localDescripcion;
+    console.log(
+      `%c[LineaServicio] selectedTrabajo change index=${index}`,
+      'color:#ff00aa;font-weight:bold',
+      selectedTrabajo
+    );
 
-    const nuevoPrecio = data.precioUnitario ?? selectedTrabajo.precioBase ?? '';
+    // Regla de oro: NO USAR nombre como fallback
+    const nuevaDescripcion =
+      !userEditedDescripcion && selectedTrabajo.descripcion
+        ? selectedTrabajo.descripcion.trim()
+        : localDescripcion;
 
-    precioOriginalRef.current = nuevoPrecio;
+    const nuevoPrecio = selectedTrabajo.precioBase ?? data.precioUnitario ?? 0;
+
+    if (precioOriginalRef.current === null) {
+      precioOriginalRef.current = nuevoPrecio;
+    }
 
     setLocalDescripcion(nuevaDescripcion);
 
@@ -60,10 +106,10 @@ export function LineaServicio({ index, data = {}, onDelete, onChange }) {
   }, [selectedTrabajo]);
 
   // ================================
-  // CUANDO BACKEND ACTUALIZA DESCRIPCIÓN
+  // SI BACKEND ACTUALIZA DESCRIPCIÓN
   // ================================
   useEffect(() => {
-    setLocalDescripcion(data.descripcion || '');
+    setLocalDescripcion(data.descripcion ?? '');
   }, [data.descripcion]);
 
   // ================================
@@ -77,12 +123,16 @@ export function LineaServicio({ index, data = {}, onDelete, onChange }) {
     precioActual !== '' &&
     Number(precioActual) !== Number(precioOriginal);
 
-  const precioClass = precioModificado
-    ? 'input-field precio-modificado'
-    : 'input-field';
-
   return (
-    <div className="row linea-servicio" style={{ marginTop: '10px' }}>
+    <div
+      className="row linea-servicio"
+      style={{
+        marginTop: '10px',
+        borderLeft: precioModificado
+          ? '4px solid #f6c743'
+          : '4px solid transparent',
+      }}
+    >
       {/* Tipo de trabajo */}
       <SelectAutocomplete
         label="Tipo de trabajo"
@@ -138,7 +188,9 @@ export function LineaServicio({ index, data = {}, onDelete, onChange }) {
         >
           <input
             type="number"
-            className={precioClass}
+            className={`input-field ${
+              precioModificado ? 'precio-modificado' : ''
+            }`}
             value={precioActual}
             min="0"
             step="0.1"
@@ -159,14 +211,25 @@ export function LineaServicio({ index, data = {}, onDelete, onChange }) {
         </div>
       </div>
 
-      {/* Eliminar */}
-      <div className="col" style={{ width: '50px' }}>
+      {/* Eliminar / Reset */}
+      <div
+        className="col"
+        style={{ width: '70px', display: 'flex', gap: '4px' }}
+      >
         <button
           type="button"
           className="button-delete"
           onClick={() => onDelete(index)}
         >
           🗑
+        </button>
+        <button
+          type="button"
+          className="button-reset"
+          onClick={() => resetLinea(index)}
+          title="Restaurar cambios"
+        >
+          ↺
         </button>
       </div>
     </div>
