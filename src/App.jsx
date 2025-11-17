@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { mockGetOrdenServicioById } from './__mock__/ordenServicioMocks';
+import DevLogPanel from './components/DevLogPanel';
 import FormIngreso from './components/form-ingreso/FormIngreso';
-import { normalizeOrdenPayload } from './utils/normalizeOrdenPayload';
 import { buildOrdenPayload } from './utils/buildOrdenPayload';
+import { normalizeOrdenPayload } from './utils/normalizeOrdenPayload';
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -58,6 +59,7 @@ function App() {
           </pre>
         </div>
       )}
+      {window.DEBUG && <DevLogPanel />}
     </div>
   );
 }

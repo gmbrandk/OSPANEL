@@ -1,76 +1,90 @@
-// src/components/form-ingreso/OrdenServicio.jsx
 import { useEffect } from 'react';
 import { useIngresoForm } from '../../context/IngresoFormContext';
 import { useAutocompleteTecnico } from '../../hooks/form-ingreso/useAutocompleteTecnico';
+import { log } from '../../utils/log'; // ← Logger
 import { Autocomplete } from './Autocomplete';
-import Collapsible from './Collapsible'; // según ruta
+import Collapsible from './Collapsible';
 import { LineaServicio } from './LineaServicio';
 
 export function OrdenServicio() {
-  const { tecnico, setTecnico, orden, setOrden } = useIngresoForm();
-  // console.log('[ORDENSERVICIO] Orden actual:', orden);
+  const {
+    tecnico,
+    setTecnico,
+    orden,
+    setOrden,
+    addLinea,
+    deleteLinea,
+    updateLinea,
+  } = useIngresoForm();
 
+  // Autocomplete técnico
   const {
     query,
     resultados,
     isOpen,
     selectedTecnico,
-    onQueryChange,
+    onChange,
     abrirResultados,
     cerrarResultados,
     seleccionarTecnico,
   } = useAutocompleteTecnico(tecnico);
 
-  /* ======================================================
-     🔄 Sincronización con el contexto global
-  ====================================================== */
+  // Sincroniza selección con el contexto
   useEffect(() => {
-    setTecnico(selectedTecnico);
-  }, [selectedTecnico, setTecnico]);
+    if (selectedTecnico) {
+      log('UI:TECNICO', 'Seleccionado técnico', selectedTecnico);
+      setTecnico(selectedTecnico);
+    }
+  }, [selectedTecnico]);
 
-  /* ======================================================
-     🧩 Manejo de líneas de servicio
-  ====================================================== */
-  const agregarLinea = () =>
-    setOrden((prev) => ({
-      ...prev,
-      lineasServicio: [...(prev.lineasServicio || []), {}],
-    }));
+  const agregarLinea = () => {
+    log('UI:LINEAS', 'Agregar línea');
+    addLinea();
+  };
 
-  const eliminarLinea = (index) =>
-    setOrden((prev) => ({
-      ...prev,
-      lineasServicio: prev.lineasServicio.filter((_, i) => i !== index),
-    }));
+  const eliminarLinea = (i) => {
+    log('UI:LINEAS', 'Eliminar línea', { index: i });
+    deleteLinea(i);
+  };
 
-  const actualizarLinea = (index, data) =>
-    setOrden((prev) => {
-      const lineas = [...prev.lineasServicio];
-      lineas[index] = { ...lineas[index], ...data };
-      return { ...prev, lineasServicio: lineas };
-    });
+  const actualizarLinea = (i, patch) => {
+    log('UI:LINEAS', 'Actualizar línea', { index: i, patch });
+    if (typeof patch === 'function') updateLinea(i, patch);
+    else updateLinea(i, (prev) => ({ ...prev, ...patch }));
+  };
 
   const handleOrdenChange = (field, value) => {
+    log('UI:ORDEN', `Cambio en campo "${field}"`, { value });
     setOrden((prev) => ({ ...prev, [field]: value }));
   };
 
   return (
     <>
+      {/* TÉCNICO */}
       <div className="row">
-        {/* ======================================================
-            👨‍🔧 AUTOCOMPLETADO TÉCNICO
-        ======================================================= */}
         <Autocomplete
           label="Técnico"
           placeholder="Buscar técnico…"
           inputName="tecnico"
           query={query}
-          onChange={onQueryChange}
+          onChange={(v) => {
+            log('UI:TECNICO', 'input técnico update', v);
+            onChange(v);
+          }}
           resultados={resultados}
           isOpen={isOpen}
-          onSelect={seleccionarTecnico}
-          cerrarResultados={cerrarResultados}
-          abrirResultados={abrirResultados}
+          onSelect={(t) => {
+            log('UI:TECNICO', 'Técnico seleccionado desde Autocomplete', t);
+            seleccionarTecnico(t);
+          }}
+          cerrarResultados={() => {
+            log('UI:TECNICO', 'Cerrar lista de técnicos');
+            cerrarResultados();
+          }}
+          abrirResultados={() => {
+            log('UI:TECNICO', 'Abrir lista de técnicos');
+            abrirResultados();
+          }}
           renderItem={(t) => (
             <>
               <strong>
@@ -101,11 +115,13 @@ export function OrdenServicio() {
         </div>
       </div>
 
-      {/* ======================================================
-    🧾 LÍNEAS DE SERVICIO
-====================================================== */}
-      <Collapsible title="Líneas de servicio" main={false} initMode="collapsed">
-        {orden.lineasServicio?.map((linea, i) => (
+      {/* LÍNEAS */}
+      <Collapsible
+        title="Líneas de servicio"
+        main={false}
+        initMode={orden.lineasServicio.length > 0 ? 'expanded' : 'collapsed'}
+      >
+        {orden.lineasServicio.map((linea, i) => (
           <LineaServicio
             key={i}
             index={i}
@@ -119,9 +135,8 @@ export function OrdenServicio() {
           + Agregar línea
         </button>
       </Collapsible>
-      {/* ======================================================
-          🧠 CAMPOS GENERALES DE LA ORDEN
-      ======================================================= */}
+
+      {/* CAMPOS GENERALES */}
       <div className="col" style={{ marginTop: 15 }}>
         <label>Diagnóstico del cliente</label>
         <textarea
@@ -144,3 +159,5 @@ export function OrdenServicio() {
     </>
   );
 }
+
+export default OrdenServicio;

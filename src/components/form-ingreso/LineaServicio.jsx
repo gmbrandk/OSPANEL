@@ -1,32 +1,25 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useIngresoForm } from '../../context/IngresoFormContext';
-import { useAutocompleteTipoTrabajo } from '../../hooks/form-ingreso/useAutocompleteTipoTrabajo.js';
+import { useAutocompleteTipoTrabajo } from '../../hooks/form-ingreso/useAutocompleteTipoTrabajo';
+import { log } from '../../utils/log'; // ← logger
 import { SelectAutocomplete } from './SelectAutocomplete.jsx';
 
 export function LineaServicio({ index, data = {}, onDelete, onChange }) {
-  // Snapshot inicial (NO CAMBIA)
-  const initialRef = useRef(data);
   const { updateLinea, deleteLinea, resetLinea, isLineaModificada } =
     useIngresoForm();
 
   const modificado = isLineaModificada(index);
-  // console.groupCollapsed(
-  //   `%c[LineaServicio] render index=${index}`,
-  //   'color:#00aaff;font-weight:bold'
-  // );
-  // console.log('data:', data);
-  // console.groupEnd();
 
-  // ================================
-  // AUTOCOMPLETE
-  // ================================
-  const initialTrabajo =
-    typeof data.tipoTrabajo === 'object'
-      ? data.tipoTrabajo
-      : data.tipoTrabajo
-      ? { nombre: data.tipoTrabajo }
-      : null;
+  // Normalización del tipoTrabajo
+  const initialTrabajo = useMemo(() => {
+    log('UI:LINEA', 'Normalizando tipoTrabajo inicial', { index, data });
+    if (typeof data.tipoTrabajo === 'object') return data.tipoTrabajo;
+    if (typeof data.tipoTrabajo === 'string')
+      return { nombre: data.tipoTrabajo };
+    return null;
+  }, [data.tipoTrabajo]);
 
+  // Autocomplete para tipo de trabajo
   const {
     query,
     resultados,
@@ -38,83 +31,59 @@ export function LineaServicio({ index, data = {}, onDelete, onChange }) {
     seleccionarTrabajo,
   } = useAutocompleteTipoTrabajo(initialTrabajo);
 
-  // ================================
-  // DESCRIPCIÓN CONTROLADA
-  // ================================
   const [localDescripcion, setLocalDescripcion] = useState(
     data.descripcion ?? ''
   );
   const [userEditedDescripcion, setUserEditedDescripcion] = useState(false);
 
-  // Solo se guarda la primera vez
   const precioOriginalRef = useRef(null);
 
-  // ================================
-  // RESET
-  // ================================
-  const handleReset = () => {
-    const original = initialRef.current;
+  // Sincronizar descripción externa → local
+  useEffect(() => {
+    if (
+      data.descripcion !== undefined &&
+      data.descripcion !== localDescripcion
+    ) {
+      log('UI:DESCRIPCION', 'Sincronizando descripción externa', {
+        index,
+        externa: data.descripcion,
+        local: localDescripcion,
+      });
+      setLocalDescripcion(data.descripcion ?? '');
+    }
+  }, [data.descripcion]);
 
-    console.log(
-      '%c[LineaServicio] RESET → estado original:',
-      'color:#ff4444',
-      original
-    );
-
-    setLocalDescripcion(original.descripcion ?? '');
-    setUserEditedDescripcion(false);
-
-    onChange(index, {
-      tipoTrabajo: original.tipoTrabajo,
-      descripcion: original.descripcion ?? '',
-      precioUnitario: original.precioUnitario ?? 0,
-      cantidad: original.cantidad ?? 1,
-    });
-  };
-
-  // ================================
-  // CUANDO CAMBIA selectedTrabajo (autocomplete)
-  // ================================
+  // Cuando el usuario selecciona un tipo de trabajo
   useEffect(() => {
     if (!selectedTrabajo) return;
 
-    console.log(
-      `%c[LineaServicio] selectedTrabajo change index=${index}`,
-      'color:#ff00aa;font-weight:bold',
-      selectedTrabajo
-    );
+    log('UI:TRABAJO', 'Tipo trabajo seleccionado', { index, selectedTrabajo });
 
-    // Regla de oro: NO USAR nombre como fallback
-    const nuevaDescripcion =
+    const descripcionFinal =
       !userEditedDescripcion && selectedTrabajo.descripcion
         ? selectedTrabajo.descripcion.trim()
         : localDescripcion;
 
-    const nuevoPrecio = selectedTrabajo.precioBase ?? data.precioUnitario ?? 0;
+    const precioNuevo = selectedTrabajo.precioBase ?? data.precioUnitario ?? 0;
 
-    if (precioOriginalRef.current === null) {
-      precioOriginalRef.current = nuevoPrecio;
-    }
+    if (precioOriginalRef.current === null)
+      precioOriginalRef.current = precioNuevo;
 
-    setLocalDescripcion(nuevaDescripcion);
-
-    onChange(index, {
+    const patch = {
       tipoTrabajo: selectedTrabajo,
-      descripcion: nuevaDescripcion,
-      precioUnitario: nuevoPrecio,
+      descripcion: descripcionFinal,
+      precioUnitario: precioNuevo,
+    };
+
+    log('UI:TRABAJO', 'Aplicando patch por selección de tipoTrabajo', {
+      index,
+      patch,
     });
+
+    if (onChange) onChange(index, patch);
+    else updateLinea(index, patch);
   }, [selectedTrabajo]);
 
-  // ================================
-  // SI BACKEND ACTUALIZA DESCRIPCIÓN
-  // ================================
-  useEffect(() => {
-    setLocalDescripcion(data.descripcion ?? '');
-  }, [data.descripcion]);
-
-  // ================================
-  // VALORES DERIVADOS
-  // ================================
   const precioActual = data.precioUnitario ?? '';
   const precioOriginal = precioOriginalRef.current;
 
@@ -133,23 +102,38 @@ export function LineaServicio({ index, data = {}, onDelete, onChange }) {
           : '4px solid transparent',
       }}
     >
-      {/* Tipo de trabajo */}
+      {/* Autocomplete tipo de trabajo */}
       <SelectAutocomplete
         label="Tipo de trabajo"
-        placeholder="Buscar o escribir tipo de trabajo..."
+        placeholder="Buscar tipo de trabajo..."
         query={query}
-        onChange={onQueryChange}
+        onChange={(v) => {
+          log('UI:TRABAJO', 'Input tipoTrabajo update', { index, query: v });
+          onQueryChange(v);
+        }}
         resultados={resultados}
         isOpen={isOpen}
-        onSelect={seleccionarTrabajo}
-        cerrarResultados={cerrarResultados}
-        abrirResultados={abrirResultados}
+        onSelect={(t) => {
+          log('UI:TRABAJO', 'Seleccionado trabajo desde lista', {
+            index,
+            trabajo: t,
+          });
+          seleccionarTrabajo(t);
+        }}
+        cerrarResultados={() => {
+          log('UI:TRABAJO', 'Cerrar lista tipoTrabajo', { index });
+          cerrarResultados();
+        }}
+        abrirResultados={() => {
+          log('UI:TRABAJO', 'Abrir lista tipoTrabajo', { index });
+          abrirResultados();
+        }}
         inputName={`tipoTrabajo-${index}`}
         renderItem={(t) => (
           <>
             <div className="autocomplete-title">{t.nombre}</div>
             <div className="autocomplete-sub">
-              S/{t.precioBase} — {t.descripcion || ''} — {t.tipo}
+              S/{t.precioBase} — {t.descripcion}
             </div>
           </>
         )}
@@ -164,9 +148,15 @@ export function LineaServicio({ index, data = {}, onDelete, onChange }) {
           value={localDescripcion}
           onChange={(e) => {
             const val = e.target.value;
+
+            log('UI:DESCRIPCION', 'Descripción editada', { index, val });
+
             setUserEditedDescripcion(true);
             setLocalDescripcion(val);
-            onChange(index, { descripcion: val });
+
+            const patch = { descripcion: val };
+            if (onChange) onChange(index, patch);
+            else updateLinea(index, patch);
           }}
         />
       </div>
@@ -179,7 +169,6 @@ export function LineaServicio({ index, data = {}, onDelete, onChange }) {
             <span className="badge-modificado">Modificado</span>
           )}
         </label>
-
         <div
           className="precio-wrapper"
           title={
@@ -195,23 +184,31 @@ export function LineaServicio({ index, data = {}, onDelete, onChange }) {
             min="0"
             step="0.1"
             onChange={(e) => {
-              let v = e.target.value;
+              const v = e.target.value;
+
+              log('UI:PRECIO', 'Precio editado', { index, raw: v });
 
               if (v === '') {
-                onChange(index, { precioUnitario: '' });
+                const patch = { precioUnitario: '' };
+                if (onChange) onChange(index, patch);
+                else updateLinea(index, patch);
                 return;
               }
 
               const num = Number(v);
-              if (Number.isNaN(num) || num < 0) return;
+              if (isNaN(num) || num < 0) return;
 
-              onChange(index, { precioUnitario: num });
+              const patch = { precioUnitario: num };
+              if (onChange) onChange(index, patch);
+              else updateLinea(index, patch);
+
+              log('UI:PRECIO', 'Precio actualizado', { index, num });
             }}
           />
         </div>
       </div>
 
-      {/* Eliminar / Reset */}
+      {/* Botones */}
       <div
         className="col"
         style={{ width: '70px', display: 'flex', gap: '4px' }}
@@ -219,15 +216,21 @@ export function LineaServicio({ index, data = {}, onDelete, onChange }) {
         <button
           type="button"
           className="button-delete"
-          onClick={() => onDelete(index)}
+          onClick={() => {
+            log('UI:LINEA', 'Eliminar línea desde botón', { index });
+            onDelete ? onDelete(index) : deleteLinea(index);
+          }}
         >
           🗑
         </button>
+
         <button
           type="button"
           className="button-reset"
-          onClick={() => resetLinea(index)}
-          title="Restaurar cambios"
+          onClick={() => {
+            log('UI:LINEA', 'Reset línea a estado original', { index });
+            resetLinea(index);
+          }}
         >
           ↺
         </button>

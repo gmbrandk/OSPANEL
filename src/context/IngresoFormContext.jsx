@@ -1,21 +1,27 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { useAutosave } from '../utils/autoSave';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+
+import { useAutosave } from '../hooks/useAutosave';
+import { log } from '../utils/log';
 
 const LS_KEY = 'formIngresoAutosave_v3';
-const EXPIRATION_MS = 3 * 60 * 60 * 1000; // 3h
+const EXPIRATION_MS = 3 * 60 * 60 * 1000; // 3 horas
 
 const IngresoFormContext = createContext(null);
 
-export function IngresoFormProvider({
-  children,
-  initialPayload = null,
-  debug = true,
-}) {
+export function IngresoFormProvider({ children, initialPayload = null }) {
   const [loaded, setLoaded] = useState(false);
 
   const [cliente, setCliente] = useState(null);
   const [equipo, setEquipo] = useState(null);
   const [tecnico, setTecnico] = useState(null);
+
   const [orden, setOrden] = useState({
     lineasServicio: [],
     diagnosticoCliente: '',
@@ -25,67 +31,101 @@ export function IngresoFormProvider({
   });
 
   const originalRef = useRef(null);
+  const initialLoadDoneRef = useRef(false);
 
-  // =====================================================================
-  // 🔥 AUTOSAVE
-  // =====================================================================
+  const [persistEnabled, setPersistEnabled] = useState(true); // ← 🔥 Nuevo
+
+  const autosaveValue = useMemo(() => {
+    return { cliente, equipo, tecnico, orden };
+  }, [cliente, equipo, tecnico, orden]);
+
+  const autosaveReady = initialLoadDoneRef.current;
+
   const autosave = useAutosave({
     key: LS_KEY,
-    value: { cliente, equipo, tecnico, orden, timestamp: Date.now() },
-    enabled: loaded, // 🔥 saves ONLY after initial payload is mounted
+    value: autosaveValue,
+    enabled: persistEnabled && autosaveReady, // ← 🔥 Control real
+    delay: 300,
+    skipInitialSave: true,
   });
 
-  // =====================================================================
-  // 🔥 FIRST LOAD LOGIC: 100% BUG-FREE
-  // =====================================================================
   useEffect(() => {
-    if (loaded) return;
+    log('PROVIDER:LOAD', 'montando Provider → iniciando secuencia inicial');
 
-    if (initialPayload) {
-      if (debug) console.log('%c[LOAD] initialPayload', 'color:#ffa500');
-      loadPayload(initialPayload);
-      setLoaded(true);
+    if (loaded) {
+      log('PROVIDER:LOAD', 'loaded ya estaba en true → saltando carga');
       return;
     }
 
+    const apply = (data) => {
+      log('PROVIDER:LOAD', 'aplicando payload (loadPayload)', data);
+      loadPayload(data);
+    };
+
+    // Si existe autosave válido → usarlo primero
     const saved = autosave.load();
     if (saved && Date.now() - saved.timestamp < EXPIRATION_MS) {
-      if (debug) console.log('%c[LOAD] autosave restored', 'color:#4caf50');
-      loadPayload(saved);
+      log(
+        'PROVIDER:LOAD',
+        'autosave restaurado → prioridad sobre initialPayload'
+      );
+      apply(saved);
+    } else if (initialPayload) {
+      log('PROVIDER:LOAD', 'initialPayload aplicado (no hay autosave)');
+      apply(initialPayload);
+    } else {
+      log('PROVIDER:LOAD', 'sin autosave ni initialPayload');
     }
 
     setLoaded(true);
-  }, [initialPayload]);
+    autosave.markReady();
+    initialLoadDoneRef.current = true;
+  }, []);
 
-  // =====================================================================
-  // 🔎 Load Payload (backend OR autosave)
-  // =====================================================================
   function loadPayload(data) {
+    if (!data) return;
+
+    const ficha = data.equipo?.fichaTecnicaManual;
+
+    const normalizedEquipo = ficha
+      ? {
+          ...data.equipo,
+          procesador: ficha.cpu ?? '',
+          ram: ficha.ram ?? '',
+          almacenamiento: ficha.almacenamiento ?? '',
+          gpu: ficha.gpu ?? '',
+        }
+      : data.equipo ?? null; // <-- mantiene compatibilidad con versiones anteriores
+
     const normalizedOrden = {
       lineasServicio: normalizeLineas(
         data.orden?.lineasServicio ?? data.lineasServicio ?? []
       ),
-      diagnosticoCliente: data.orden?.diagnosticoCliente ?? '',
-      observaciones: data.orden?.observaciones ?? '',
-      total: Number(data.orden?.total ?? 0),
-      fechaIngreso: data.orden?.fechaIngreso ?? new Date().toISOString(),
+      diagnosticoCliente:
+        data.orden?.diagnosticoCliente ?? data.diagnosticoCliente ?? '',
+      observaciones: data.orden?.observaciones ?? data.observaciones ?? '',
+      total: Number(data.orden?.total ?? data.total ?? 0),
+      fechaIngreso:
+        data.orden?.fechaIngreso ??
+        data.fechaIngreso ??
+        new Date().toISOString(),
     };
 
     setCliente(data.cliente ?? null);
-    setEquipo(data.equipo ?? null);
+    setEquipo(normalizedEquipo);
     setTecnico(data.tecnico ?? null);
     setOrden(normalizedOrden);
 
     originalRef.current = {
       cliente: data.cliente ?? null,
-      equipo: data.equipo ?? null,
+      equipo: normalizedEquipo,
       tecnico: data.tecnico ?? null,
       orden: normalizedOrden,
     };
   }
 
   function normalizeLineas(lineas) {
-    return lineas.map((l) => ({
+    return (lineas || []).map((l) => ({
       tipoTrabajo: l.tipoTrabajo ?? null,
       descripcion: l.descripcion ?? '',
       precioUnitario: Number(l.precioUnitario ?? l.precio ?? 0),
@@ -93,13 +133,12 @@ export function IngresoFormProvider({
     }));
   }
 
-  // =====================================================================
-  // 💰 TOTAL AUTOMÁTICO – sin loop infinito
-  // =====================================================================
   useEffect(() => {
     if (!orden.lineasServicio) return;
+
     const total = orden.lineasServicio.reduce(
-      (acc, l) => acc + l.precioUnitario * l.cantidad,
+      (acc, l) =>
+        acc + (Number(l.precioUnitario) || 0) * (Number(l.cantidad) || 0),
       0
     );
 
@@ -108,24 +147,64 @@ export function IngresoFormProvider({
     }
   }, [orden.lineasServicio]);
 
-  // =====================================================================
-  // 🎯 Cambios visuales
-  // =====================================================================
+  const addLinea = () => {
+    setOrden((prev) => ({
+      ...prev,
+      lineasServicio: [
+        ...prev.lineasServicio,
+        {
+          descripcion: '',
+          precioUnitario: 0,
+          cantidad: 1,
+          tipoTrabajo: null,
+        },
+      ],
+    }));
+  };
+
+  const deleteLinea = (index) => {
+    setOrden((prev) => ({
+      ...prev,
+      lineasServicio: prev.lineasServicio.filter((_, i) => i !== index),
+    }));
+  };
+
+  const updateLinea = (index, patchOrFn) =>
+    setOrden((prev) => {
+      const lineas = [...prev.lineasServicio];
+      const current = lineas[index];
+      const next =
+        typeof patchOrFn === 'function'
+          ? patchOrFn(current)
+          : { ...current, ...patchOrFn };
+
+      if (JSON.stringify(current) === JSON.stringify(next)) return prev;
+
+      lineas[index] = next;
+      return { ...prev, lineasServicio: lineas };
+    });
+
+  const resetLinea = (index) => {
+    const orig = originalRef.current?.orden?.lineasServicio?.[index];
+    if (!orig) return;
+    updateLinea(index, orig);
+  };
+
   const isLineaModificada = (index) => {
     const orig = originalRef.current?.orden?.lineasServicio?.[index];
     const now = orden.lineasServicio[index];
-    if (!orig) return true;
+    if (!orig && !now) return false;
+    if (!orig && now) return true;
+    if (!now) return true;
+
     return (
       orig.descripcion !== now.descripcion ||
-      orig.precioUnitario !== now.precioUnitario ||
-      orig.cantidad !== now.cantidad ||
+      Number(orig.precioUnitario) !== Number(now.precioUnitario) ||
+      Number(orig.cantidad) !== Number(now.cantidad) ||
       JSON.stringify(orig.tipoTrabajo) !== JSON.stringify(now.tipoTrabajo)
     );
   };
 
-  // =====================================================================
-  // 📤 Payload a enviar
-  // =====================================================================
   const getFullPayload = () => ({
     cliente,
     equipo,
@@ -135,17 +214,14 @@ export function IngresoFormProvider({
 
   const clearAutosave = () => {
     autosave.clear();
-    if (debug) console.log('%c[Autosave cleared]', 'color:red');
+    log('PROVIDER:AUTOSAVE', 'autosave limpiado manualmente');
   };
 
-  const resetLinea = (index) => {
-    const orig = originalRef.current?.orden?.lineasServicio?.[index];
-    setOrden((prev) => {
-      const o = [...prev.lineasServicio];
-      o[index] = JSON.parse(JSON.stringify(orig));
-      return { ...prev, lineasServicio: o };
-    });
+  const submitAndClear = () => {
+    autosave.clear();
+    log('PROVIDER:AUTOSAVE', 'autosave limpiado después de submit');
   };
+
   return (
     <IngresoFormContext.Provider
       value={{
@@ -157,11 +233,23 @@ export function IngresoFormProvider({
         setTecnico,
         orden,
         setOrden,
-        getFullPayload,
-        clearAutosave,
+
+        addLinea,
+        deleteLinea,
+        updateLinea,
         resetLinea,
-        isLineaModificada, // ⬅️ ahora SÍ está expuesto
+
+        getFullPayload,
+        isLineaModificada,
+        clearAutosave,
+        submitAndClear, // ← Nuevo
+
+        persistEnabled, // ← Nuevo
+        setPersistEnabled, // ← Nuevo
+
         loaded,
+        autosave,
+        autosaveReady,
       }}
     >
       {children}

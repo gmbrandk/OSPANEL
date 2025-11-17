@@ -21,6 +21,12 @@ export async function mockGetOrdenServicioById(id) {
         marca: 'HP',
         modelo: 'Pavilion 15',
         nroSerie: 'HP12345LAP',
+        fichaTecnicaManual: {
+          cpu: 'Intel Core i7-13700H (Raptor Lake, 14 núcleos: 6 P-cores + 8 E-cores, hasta 5.0 GHz)',
+          ram: '16 GB DDR5 (soldered/dual-channel, 5200 MT/s)',
+          almacenamiento: '1 TB SSD NVMe PCIe 4.0 (M.2)',
+          gpu: 'NVIDIA GeForce RTX 4050 (6 GB GDDR6) + Intel Iris Xe integrada',
+        },
       },
       tecnico: {
         _id: '6811a47aebf66546dbed5910',

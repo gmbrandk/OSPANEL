@@ -55,6 +55,34 @@ export default function Collapsible({
     });
   }, [title, index, main, isControlledByGroup, group, setOpen, openedByUser]);
 
+  useEffect(() => {
+    const shouldBeOpen = shouldStartOpen;
+
+    console.log(
+      `%c[COLLAPSIBLE] 🔄 initMode change detected`,
+      'color:#0ff;font-weight:bold',
+      {
+        initMode,
+        shouldStartOpen,
+        previousOpen: isOpen,
+        nextOpen: shouldBeOpen,
+      }
+    );
+
+    if (shouldBeOpen !== isOpen) {
+      console.log(
+        `%c[COLLAPSIBLE] 🟢 syncing state → setOpen(${shouldBeOpen})`,
+        'color:#7f7'
+      );
+      setOpen(shouldBeOpen);
+    } else {
+      console.log(
+        `%c[COLLAPSIBLE] ⚪ no sync needed (already correct)`,
+        'color:#aaa'
+      );
+    }
+  }, [initMode]);
+
   /* ======================================================
      🔄 Notificar al grupo cuando se abre manualmente
   ====================================================== */
