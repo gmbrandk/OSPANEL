@@ -7,7 +7,7 @@ fieldset.collapsible {
   border-radius: 4px;
   padding: 0;
   background: #fff;
-  overflow: hidden;
+  overflow: visible; /* ⬅️ antes era hidden — ahora PUEDE mostrar dropdowns */
 }
 
 /* ======================================================
@@ -57,7 +57,7 @@ fieldset.collapsible {
    CONTENIDO — CONTROLADO POR JS
 ====================================================== */
 .fieldset-content {
-  overflow: hidden;
+  overflow: visible; /* ⬅️ necesario para dropdowns */
   padding: 15px 18px;
 
   opacity: 1;
@@ -66,6 +66,7 @@ fieldset.collapsible {
 
 /* Estado colapsado (solo visual) */
 .collapsed .fieldset-content {
+  overflow: hidden !important; /* ⬅️ solo se oculta cuando está colapsado */
   padding-top: 0 !important;
   padding-bottom: 0 !important;
 }

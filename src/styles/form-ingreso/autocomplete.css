@@ -22,13 +22,13 @@
    🎛 Zona de acciones (Clear + Toggle)
 ===================================================== */
 .autocomplete-actions {
+  background-color: #fff;
   position: absolute;
   right: 6px;
   top: 0;
   bottom: 0;
   display: flex;
   align-items: center;
-  gap: 4px;
 }
 
 /* Botones con estilos unificados */
@@ -45,6 +45,7 @@
 .autocomplete-toggle:hover {
   opacity: 1;
   border: none !important;
+  box-shadow: none !important;
 }
 
 /* Clear icon (✕) */
@@ -61,10 +62,9 @@
   transition: transform 0.2s;
 }
 
-.autocomplete-toggle.open img {
+.rotated {
   transform: rotate(180deg);
 }
-
 /* =====================================================
    📜 Lista
 ===================================================== */
@@ -94,8 +94,51 @@
 }
 
 /* =====================================================
-   📌 Compatibilidad con tablas
+   INPUT + ICONS
 ===================================================== */
-.autocomplete-wrapper {
+.autocomplete-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
   width: 100%;
+
+  border: 1px solid #ccc; /* 👈 ahora el borde es del wrapper */
+  border-radius: 3px;
+  background: white;
+}
+.autocomplete-input-wrapper:focus-within {
+  border-color: #4285f4;
+  box-shadow: 0 0 3px rgba(66, 133, 244, 0.4);
+}
+
+/* Input sin borde */
+.autocomplete-input {
+  border: none !important;
+  outline: none !important;
+  padding: 15px;
+  flex: 1;
+  font-family: montserrat;
+  font-size: 13px;
+  color: #2c3e50;
+}
+
+/* Iconos */
+.autocomplete-actions {
+  display: flex;
+  align-items: center;
+  background: white;
+}
+
+/* Botones */
+.autocomplete-clear,
+.autocomplete-toggle {
+  background: transparent;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  opacity: 0.8;
+}
+.autocomplete-clear:hover,
+.autocomplete-toggle:hover {
+  opacity: 1;
 }

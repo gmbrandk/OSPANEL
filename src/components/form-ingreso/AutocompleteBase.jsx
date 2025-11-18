@@ -1,6 +1,7 @@
+// AutocompleteBase.jsx
 import PropTypes from 'prop-types';
-import closeCircle from '../../assets/form-ingreso/close-circle.svg';
-import dropdownArrow from '../../assets/form-ingreso/dropdown-arrow.svg';
+import { useEffect, useRef } from 'react';
+import closeIcon from '../../assets/form-ingreso/close.svg';
 
 export function AutocompleteBase({
   label,
@@ -15,8 +16,17 @@ export function AutocompleteBase({
   renderItem,
   inputName,
   onFocus,
+  renderIcon, // 👈 nuevo
 }) {
   const showClear = Boolean(query?.trim());
+  const blurTimeout = useRef(null);
+  const items = resultados ?? [];
+
+  useEffect(() => {
+    return () => {
+      if (blurTimeout.current) clearTimeout(blurTimeout.current);
+    };
+  }, []);
 
   return (
     <div className="col autocomplete-container">
@@ -31,8 +41,16 @@ export function AutocompleteBase({
             className="input-field autocomplete-input"
             value={query}
             onChange={(e) => onChange(e.target.value)}
-            onBlur={() => setTimeout(cerrarResultados, 150)}
-            onFocus={() => onFocus?.()}
+            onBlur={() => {
+              blurTimeout.current = setTimeout(() => cerrarResultados?.(), 150);
+            }}
+            onFocus={() => {
+              if (blurTimeout.current) {
+                clearTimeout(blurTimeout.current);
+                blurTimeout.current = null;
+              }
+              onFocus?.();
+            }}
             onClick={() => !isOpen && onToggle()}
             autoComplete="off"
             placeholder={placeholder}
@@ -47,32 +65,34 @@ export function AutocompleteBase({
                 onMouseDown={(e) => {
                   e.preventDefault();
                   onChange('');
-                  onFocus?.(); // opcional + seguro
+                  onFocus?.();
                 }}
               >
-                <img src={closeCircle} alt="close" />
+                <img src={closeIcon} alt="close" />
               </button>
             )}
 
+            {/* 👇 ESTA ES LA CLAVE: icono configurable */}
             <button
               type="button"
-              className={`autocomplete-toggle ${isOpen ? 'open' : ''}`}
+              className="autocomplete-toggle"
               onMouseDown={(e) => {
                 e.preventDefault();
                 onToggle();
               }}
             >
-              <img src={dropdownArrow} alt="toggle" />
+              {renderIcon?.({ isOpen }) ?? null}
             </button>
           </div>
         </div>
 
-        {isOpen && resultados.length > 0 && (
-          <div className="autocomplete-list">
-            {resultados.map((item) => (
+        {isOpen && items.length > 0 && (
+          <div className="autocomplete-list" role="listbox">
+            {items.map((item) => (
               <div
                 key={item._id || item.id}
                 className="autocomplete-item"
+                role="option"
                 onMouseDown={() => onSelect(item)}
               >
                 {renderItem ? renderItem(item) : <>{item.nombre}</>}
@@ -98,4 +118,5 @@ AutocompleteBase.propTypes = {
   renderItem: PropTypes.func,
   inputName: PropTypes.string,
   onFocus: PropTypes.func,
+  renderIcon: PropTypes.func, // 👈 nuevo
 };

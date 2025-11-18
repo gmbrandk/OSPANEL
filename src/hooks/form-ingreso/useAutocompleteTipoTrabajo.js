@@ -6,6 +6,7 @@ export function useAutocompleteTipoTrabajo(initialValue = null) {
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTrabajo, setSelectedTrabajo] = useState(null);
+  const [forceShowAll, setForceShowAll] = useState(false);
 
   const initializedRef = useRef(false);
 
@@ -65,34 +66,42 @@ export function useAutocompleteTipoTrabajo(initialValue = null) {
   // 🔍 Filtrado
   // ============================================================
   const resultados = useMemo(() => {
-    const q = (query ?? '').trim().toLowerCase(); // FIX anti crash
+    const q = (query ?? '').trim().toLowerCase();
+    if (!q) return tiposTrabajoMock; // SELECT puro si no hay texto
 
-    if (!q) {
-      log('AUTO-TIPO', 'Query vacía → todos los resultados');
-      return tiposTrabajoMock;
-    }
+    const score = (item) => {
+      const name = item.nombre.toLowerCase();
 
-    const res = tiposTrabajoMock.filter((t) => {
-      const nombre = t.nombre?.toLowerCase() ?? '';
-      const cat = t.categoria?.toLowerCase() ?? '';
-      const desc = t.descripcion?.toLowerCase() ?? '';
+      if (name === q) return 100; // exact
+      if (name.startsWith(q)) return 80; // prefix
+      if (name.includes(q)) return 40; // contains
+      return 0; // no match (still included)
+    };
 
-      return nombre.includes(q) || cat.includes(q) || desc.includes(q);
-    });
-
-    log('AUTO-TIPO', `Filtro q="${q}" → ${res.length} resultados`);
-    return res;
+    return [...tiposTrabajoMock] // ← clone to avoid mutating data
+      .map((item) => ({
+        item,
+        score: score(item),
+      }))
+      .sort((a, b) => b.score - a.score) // primary: score
+      .map((x) => x.item);
   }, [query]);
 
-  // ============================================================
-  // 🧭 API expuesta
-  // ============================================================
-  const abrirResultados = () => setIsOpen(true);
-  const cerrarResultados = () => setIsOpen(false);
+  // API
+  const abrirResultados = () => {
+    setIsOpen(true);
+    setForceShowAll(true); // 👈 SELECT BEHAVIOR
+  };
+
+  const cerrarResultados = () => {
+    setIsOpen(false);
+    setForceShowAll(false); // 👈 vuelve a modo normal
+  };
 
   const onChange = (value) => {
     setQuery(value);
     setSelectedTrabajo(null);
+    setForceShowAll(false); // 👈 si escribe, vuelve a filtrar
     abrirResultados();
 
     log('AUTO-TIPO', 'Usuario escribe', value);
@@ -101,7 +110,7 @@ export function useAutocompleteTipoTrabajo(initialValue = null) {
   const seleccionarTrabajo = (trabajo) => {
     log('AUTO-TIPO', 'Seleccionado', trabajo);
     setSelectedTrabajo(trabajo);
-    setQuery(trabajo.nombre); // ← sincroniza inmediatamente
+    setQuery(trabajo.nombre);
     cerrarResultados();
   };
 

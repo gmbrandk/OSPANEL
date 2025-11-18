@@ -1,10 +1,11 @@
 // SelectAutocomplete.jsx
+import dropdownArrow from '../../assets/form-ingreso/dropdown-arrow.svg';
 import { AutocompleteBase } from './AutocompleteBase.jsx';
 
 export function SelectAutocomplete({
   label,
   placeholder,
-  query, // el texto que se muestra SIEMPRE viene del hook
+  query,
   onChange,
   resultados,
   isOpen,
@@ -14,21 +15,35 @@ export function SelectAutocomplete({
   inputName,
   abrirResultados,
 }) {
+  const handleToggle = () => {
+    if (isOpen) cerrarResultados();
+    else abrirResultados();
+  };
+
+  // 👇 CLAVE: en select queremos mostrar SIEMPRE todas las opciones
+  const resultadosForSelect = isOpen ? resultados : [];
+
   return (
     <AutocompleteBase
       label={label}
       placeholder={placeholder}
-      value={query} // 👈 "value" SIEMPRE = query (no usar otra cosa)
       query={query}
       onChange={onChange}
-      resultados={resultados}
+      resultados={resultadosForSelect}
       isOpen={isOpen}
       onSelect={onSelect}
       cerrarResultados={cerrarResultados}
       renderItem={renderItem}
       inputName={inputName}
       onFocus={abrirResultados}
-      onToggle={() => (isOpen ? cerrarResultados() : abrirResultados())}
+      onToggle={handleToggle}
+      renderIcon={({ isOpen }) => (
+        <img
+          src={dropdownArrow}
+          alt="toggle"
+          className={isOpen ? 'rotated' : ''}
+        />
+      )}
     />
   );
 }

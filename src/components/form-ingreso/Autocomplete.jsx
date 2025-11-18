@@ -1,3 +1,4 @@
+import searchIcon from '../../assets/form-ingreso/search.svg';
 import { AutocompleteBase } from './AutocompleteBase.jsx';
 
 export function Autocomplete({
@@ -24,9 +25,9 @@ export function Autocomplete({
     <AutocompleteBase
       label={label}
       placeholder={placeholder}
-      query={query ?? ''} // ← Fallback definitivo
+      query={query ?? ''}
       onChange={onChange}
-      resultados={resultados ?? []} // ← segura
+      resultados={resultados ?? []}
       isOpen={isOpen}
       onSelect={onSelect}
       cerrarResultados={cerrarResultados}
@@ -34,6 +35,7 @@ export function Autocomplete({
       inputName={inputName}
       onFocus={handleFocus}
       onToggle={handleToggle}
+      renderIcon={() => <img src={searchIcon} alt="search" />} // 👈 Aquí está la lupa
     />
   );
 }
