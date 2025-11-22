@@ -1,6 +1,6 @@
-// hooks/form-ingreso/useAutocompleteTecnico.js
+// src/hooks/form-ingreso/useAutocompleteTecnico.js
 import { useEffect, useRef, useState } from 'react';
-import { useTecnicos } from '../../context/tecnicosContext';
+import { useTecnicos } from '../../context/TecnicosContext';
 import { normalizarTecnico } from '../../utils/normalizarTecnico';
 
 const EMPTY_TECNICO = normalizarTecnico({
@@ -11,6 +11,14 @@ const EMPTY_TECNICO = normalizarTecnico({
   especialidad: '',
 });
 
+/**
+ * 🔥 Autocomplete PRO para Técnicos
+ * - Normalización robusta
+ * - Manejo inteligente de initialValue
+ * - Prevención de loops
+ * - Debounce en búsquedas
+ * - Lookup por ID para obtener datos completos
+ */
 export function useAutocompleteTecnico(initialValue = null, minLength = 2) {
   const { tecnicos, buscarTecnicos, buscarTecnicoPorId } = useTecnicos();
 
@@ -21,7 +29,7 @@ export function useAutocompleteTecnico(initialValue = null, minLength = 2) {
   const isSelecting = useRef(false);
 
   // ============================================================
-  // 🟦 Inicializar desde initialValue
+  // 🟦 Sincronizar initialValue → estado interno (sin loops)
   // ============================================================
   useEffect(() => {
     if (!initialValue) {
@@ -31,18 +39,21 @@ export function useAutocompleteTecnico(initialValue = null, minLength = 2) {
     }
 
     const normalized = normalizarTecnico(initialValue);
-    setSelectedTecnico((prev) =>
-      JSON.stringify(prev) === JSON.stringify(normalized) ? prev : normalized
-    );
+
+    setSelectedTecnico((prev) => {
+      const same = JSON.stringify(prev) === JSON.stringify(normalized);
+      return same ? prev : normalized;
+    });
 
     setQuery(normalized.nombreCompleto || '');
   }, [initialValue]);
 
   // ============================================================
-  // 🔍 Debounced búsqueda
+  // 🔍 Debounced búsqueda inteligente
   // ============================================================
   useEffect(() => {
     if (isSelecting.current) return;
+
     if (!query || query.trim().length < minLength) return;
 
     const timeout = setTimeout(() => {
@@ -51,10 +62,10 @@ export function useAutocompleteTecnico(initialValue = null, minLength = 2) {
     }, 350);
 
     return () => clearTimeout(timeout);
-  }, [query, minLength, buscarTecnicos]);
+  }, [query, buscarTecnicos, minLength]);
 
   // ============================================================
-  // 🎯 Selección + lookup
+  // 🎯 Seleccionar técnico y obtener datos completos (lookup)
   // ============================================================
   const seleccionarTecnico = async (tParcial) => {
     isSelecting.current = true;
@@ -62,36 +73,43 @@ export function useAutocompleteTecnico(initialValue = null, minLength = 2) {
     setQuery(tParcial.nombreCompleto || '');
     setIsOpen(false);
 
-    const full = await buscarTecnicoPorId(tParcial._id);
-    const normalized = normalizarTecnico(full || tParcial);
+    const fullData = await buscarTecnicoPorId(tParcial._id);
 
-    setSelectedTecnico(normalized);
+    const normalized = normalizarTecnico(fullData || tParcial);
+
+    setSelectedTecnico((prev) => {
+      const same = JSON.stringify(prev) === JSON.stringify(normalized);
+      return same ? prev : normalized;
+    });
 
     setTimeout(() => {
       isSelecting.current = false;
     }, 100);
   };
 
+  // ============================================================
+  // 🧩 Handlers UI
+  // ============================================================
   const onQueryChange = (value) => {
     setQuery(value);
     setIsOpen(true);
   };
 
+  const abrirResultados = () => setIsOpen(true);
+
+  const cerrarResultados = () => {
+    setTimeout(() => setIsOpen(false), 150);
+  };
+
   return {
     query,
-    resultados: (() => {
-      // console.log(
-      //   '%c[AUTOCOMPLETE TECNICO] Resultados recibidos:',
-      //   'color: #4CAF50',
-      //   tecnicos
-      // );
-      return tecnicos;
-    })(),
+    resultados: tecnicos, // resultados reales (API o mock)
     selectedTecnico,
+    seleccionarTecnico,
     isOpen,
     onQueryChange,
-    seleccionarTecnico,
-    abrirResultados: () => setIsOpen(true),
-    cerrarResultados: () => setTimeout(() => setIsOpen(false), 150),
+    abrirResultados,
+    cerrarResultados,
+    setSelectedTecnico,
   };
 }

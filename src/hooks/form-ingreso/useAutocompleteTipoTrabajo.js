@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { tiposTrabajoMock } from '../../__mock__/form-ingreso';
+
+import { useTiposTrabajo } from '../../context/tiposTrabajoContext';
 import { log } from '../../utils/log';
 
 export function useAutocompleteTipoTrabajo(initialValue = null) {
+  const { tiposTrabajo } = useTiposTrabajo(); // ← datos del backend
+
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTrabajo, setSelectedTrabajo] = useState(null);
@@ -10,105 +13,96 @@ export function useAutocompleteTipoTrabajo(initialValue = null) {
 
   const initializedRef = useRef(false);
 
-  // ============================================================
-  // 🔄 Inicialización desde props / backend
-  // ============================================================
+  // ======================
+  // Inicialización
+  // ======================
   useEffect(() => {
-    if (initializedRef.current) return; // evitamos loops
+    if (!tiposTrabajo || tiposTrabajo.length === 0) return;
+
+    if (initializedRef.current) return;
     if (!initialValue) return;
 
     initializedRef.current = true;
-
     log('AUTO-TIPO', 'Inicializando desde initialValue', initialValue);
 
-    // Caso: objeto completo
     if (typeof initialValue === 'object' && initialValue.nombre) {
       setSelectedTrabajo(initialValue);
       setQuery(initialValue.nombre);
-      log('AUTO-TIPO', 'Inicializado con objeto', initialValue);
       return;
     }
 
-    // Caso: string
     if (typeof initialValue === 'string') {
       const lower = initialValue.trim().toLowerCase();
-      const found = tiposTrabajoMock.find(
+
+      const found = tiposTrabajo.find(
         (t) => t.nombre.trim().toLowerCase() === lower
       );
 
       if (found) {
-        log('AUTO-TIPO', 'Inicializado con string que coincide', found);
         setSelectedTrabajo(found);
         setQuery(found.nombre);
       } else {
-        log('AUTO-TIPO', 'Inicializado con string libre', initialValue);
         setSelectedTrabajo(null);
         setQuery(initialValue);
       }
     }
-  }, [initialValue]);
+  }, [initialValue, tiposTrabajo]);
 
-  // ============================================================
-  // ✨ CRÍTICO: SINCRONIZAR query <--> selectedTrabajo
-  // ============================================================
+  // ======================
+  // Sincronización query
+  // ======================
   useEffect(() => {
     if (!selectedTrabajo) return;
-    if (!selectedTrabajo.nombre) return;
-
-    log('AUTO-TIPO', 'Sync query <- selectedTrabajo', {
-      nombre: selectedTrabajo.nombre,
-    });
-
     setQuery(selectedTrabajo.nombre);
   }, [selectedTrabajo]);
 
-  // ============================================================
-  // 🔍 Filtrado
-  // ============================================================
+  // ======================
+  // Filtrado
+  // ======================
   const resultados = useMemo(() => {
+    if (!tiposTrabajo) return [];
+
     const q = (query ?? '').trim().toLowerCase();
-    if (!q) return tiposTrabajoMock; // SELECT puro si no hay texto
+
+    if (!q) return tiposTrabajo;
 
     const score = (item) => {
       const name = item.nombre.toLowerCase();
 
-      if (name === q) return 100; // exact
-      if (name.startsWith(q)) return 80; // prefix
-      if (name.includes(q)) return 40; // contains
-      return 0; // no match (still included)
+      if (name === q) return 100;
+      if (name.startsWith(q)) return 80;
+      if (name.includes(q)) return 40;
+      return 0;
     };
 
-    return [...tiposTrabajoMock] // ← clone to avoid mutating data
+    return [...tiposTrabajo]
       .map((item) => ({
         item,
         score: score(item),
       }))
-      .sort((a, b) => b.score - a.score) // primary: score
+      .sort((a, b) => b.score - a.score)
       .map((x) => x.item);
-  }, [query]);
+  }, [query, tiposTrabajo]);
 
   // API
   const abrirResultados = () => {
     setIsOpen(true);
-    setForceShowAll(true); // 👈 SELECT BEHAVIOR
+    setForceShowAll(true);
   };
 
   const cerrarResultados = () => {
     setIsOpen(false);
-    setForceShowAll(false); // 👈 vuelve a modo normal
+    setForceShowAll(false);
   };
 
   const onChange = (value) => {
     setQuery(value);
     setSelectedTrabajo(null);
-    setForceShowAll(false); // 👈 si escribe, vuelve a filtrar
+    setForceShowAll(false);
     abrirResultados();
-
-    log('AUTO-TIPO', 'Usuario escribe', value);
   };
 
   const seleccionarTrabajo = (trabajo) => {
-    log('AUTO-TIPO', 'Seleccionado', trabajo);
     setSelectedTrabajo(trabajo);
     setQuery(trabajo.nombre);
     cerrarResultados();

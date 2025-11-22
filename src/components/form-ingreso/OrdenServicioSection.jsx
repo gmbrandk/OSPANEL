@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useIngresoForm } from '../../context/IngresoFormContext';
 import { useAutocompleteTecnico } from '../../hooks/form-ingreso/useAutocompleteTecnico';
-import { log } from '../../utils/log'; // ← Logger
+import { log } from '../../utils/log';
 import { Autocomplete } from './Autocomplete';
 import Collapsible from './Collapsible';
 import { LineaServicio } from './LineaServicio';
@@ -17,46 +17,51 @@ export function OrdenServicio() {
     updateLinea,
   } = useIngresoForm();
 
-  // Autocomplete técnico
+  // ============================
+  // AUTOCOMPLETE TÉCNICO
+  // ============================
   const {
     query,
     resultados,
     isOpen,
-    selectedTecnico,
-    onChange,
+    onQueryChange,
     abrirResultados,
     cerrarResultados,
     seleccionarTecnico,
+    selectedTecnico, // ← FALTABA
   } = useAutocompleteTecnico(tecnico);
 
-  // Sincroniza selección con el contexto
+  // ============================
+  // SYNC: Autocomplete → Context
+  // ============================
   useEffect(() => {
-    if (selectedTecnico) {
-      log('UI:TECNICO', 'Seleccionado técnico', selectedTecnico);
+    if (selectedTecnico && selectedTecnico._id) {
+      log('UI:TECNICO', 'Sync hacia IngresoFormContext', selectedTecnico);
       setTecnico(selectedTecnico);
     }
   }, [selectedTecnico]);
 
-  const agregarLinea = () => {
-    log('UI:LINEAS', 'Agregar línea');
-    addLinea();
-  };
+  // ============================
+  // LÍNEAS
+  // ============================
+  const agregarLinea = () => addLinea();
 
-  const eliminarLinea = (i) => {
-    log('UI:LINEAS', 'Eliminar línea', { index: i });
-    deleteLinea(i);
-  };
+  const eliminarLinea = (i) => deleteLinea(i);
 
   const actualizarLinea = (i, patch) => {
-    log('UI:LINEAS', 'Actualizar línea', { index: i, patch });
-    if (typeof patch === 'function') updateLinea(i, patch);
-    else updateLinea(i, (prev) => ({ ...prev, ...patch }));
+    updateLinea(
+      i,
+      typeof patch === 'function'
+        ? patch
+        : (prev) => ({
+            ...prev,
+            ...patch,
+          })
+    );
   };
 
-  const handleOrdenChange = (field, value) => {
-    log('UI:ORDEN', `Cambio en campo "${field}"`, { value });
+  const handleOrdenChange = (field, value) =>
     setOrden((prev) => ({ ...prev, [field]: value }));
-  };
 
   return (
     <>
@@ -67,31 +72,18 @@ export function OrdenServicio() {
           placeholder="Buscar técnico…"
           inputName="tecnico"
           query={query}
-          onChange={(v) => {
-            log('UI:TECNICO', 'input técnico update', v);
-            onChange(v);
-          }}
+          onChange={onQueryChange}
           resultados={resultados}
           isOpen={isOpen}
-          onSelect={(t) => {
-            log('UI:TECNICO', 'Técnico seleccionado desde Autocomplete', t);
-            seleccionarTecnico(t);
-          }}
-          cerrarResultados={() => {
-            log('UI:TECNICO', 'Cerrar lista de técnicos');
-            cerrarResultados();
-          }}
-          abrirResultados={() => {
-            log('UI:TECNICO', 'Abrir lista de técnicos');
-            abrirResultados();
-          }}
+          onSelect={seleccionarTecnico}
+          abrirResultados={abrirResultados}
+          cerrarResultados={cerrarResultados}
           renderItem={(t) => (
             <>
-              <strong>
-                {t.nombres} {t.apellidos}
-              </strong>
+              <strong>{t.nombreCompleto}</strong>
               <br />
-              <small>{t.email}</small>
+              {t.email && <small>{t.email}</small>} —
+              {t.role && <small>{t.role}</small>}
             </>
           )}
         />
@@ -99,7 +91,7 @@ export function OrdenServicio() {
         <div className="col">
           <label>Email</label>
           <input
-            value={selectedTecnico?.email ?? ''}
+            value={selectedTecnico?.email || ''}
             readOnly
             className="input-field"
           />
@@ -108,14 +100,14 @@ export function OrdenServicio() {
         <div className="col">
           <label>Teléfono</label>
           <input
-            value={selectedTecnico?.telefono ?? ''}
+            value={selectedTecnico?.telefono || ''}
             readOnly
             className="input-field"
           />
         </div>
       </div>
 
-      {/* LÍNEAS */}
+      {/* LÍNEAS DE SERVICIO */}
       <Collapsible
         title="Líneas de servicio"
         main={false}

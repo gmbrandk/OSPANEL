@@ -58,28 +58,28 @@ export default function Collapsible({
   useEffect(() => {
     const shouldBeOpen = shouldStartOpen;
 
-    console.log(
-      `%c[COLLAPSIBLE] 🔄 initMode change detected`,
-      'color:#0ff;font-weight:bold',
-      {
-        initMode,
-        shouldStartOpen,
-        previousOpen: isOpen,
-        nextOpen: shouldBeOpen,
-      }
-    );
+    // console.log(
+    //   `%c[COLLAPSIBLE] 🔄 initMode change detected`,
+    //   'color:#0ff;font-weight:bold',
+    //   {
+    //     initMode,
+    //     shouldStartOpen,
+    //     previousOpen: isOpen,
+    //     nextOpen: shouldBeOpen,
+    //   }
+    // );
 
     if (shouldBeOpen !== isOpen) {
-      console.log(
-        `%c[COLLAPSIBLE] 🟢 syncing state → setOpen(${shouldBeOpen})`,
-        'color:#7f7'
-      );
+      // console.log(
+      //   `%c[COLLAPSIBLE] 🟢 syncing state → setOpen(${shouldBeOpen})`,
+      //   'color:#7f7'
+      // );
       setOpen(shouldBeOpen);
     } else {
-      console.log(
-        `%c[COLLAPSIBLE] ⚪ no sync needed (already correct)`,
-        'color:#aaa'
-      );
+      // console.log(
+      //   `%c[COLLAPSIBLE] ⚪ no sync needed (already correct)`,
+      //   'color:#aaa'
+      // );
     }
   }, [initMode]);
 
@@ -93,9 +93,9 @@ export default function Collapsible({
     }
 
     if (main && isControlledByGroup && isOpen && openedByUser.current) {
-      console.log(
-        `[COLLAPSIBLE] 🔵 "${title}" abierto manualmente, notificando al grupo`
-      );
+      // console.log(
+      //   `[COLLAPSIBLE] 🔵 "${title}" abierto manualmente, notificando al grupo`
+      // );
       group.registerOpen(title, index);
     }
   }, [isOpen, main, isControlledByGroup, group, title, index]);
@@ -103,10 +103,10 @@ export default function Collapsible({
   const handleFocusIn = () => {
     if (!main) return;
     if (!isOpen) {
-      console.log(
-        `%c[COLLAPSIBLE] 🟢 Focus en "${title}" → auto expand`,
-        'color: #7f7'
-      );
+      // console.log(
+      //   `%c[COLLAPSIBLE] 🟢 Focus en "${title}" → auto expand`,
+      //   'color: #7f7'
+      // );
       setOpen(true);
     }
     if (isControlledByGroup) group.registerOpen(title, index);

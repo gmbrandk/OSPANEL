@@ -3,12 +3,22 @@ import { mockGetOrdenServicioById } from './__mock__/ordenServicioMocks';
 import DevLogPanel from './components/DevLogPanel';
 import FormIngreso from './components/form-ingreso/FormIngreso';
 import { buildOrdenPayload } from './utils/buildOrdenPayload';
+import { ensureAuth } from './utils/ensureAuth';
 import { normalizeOrdenPayload } from './utils/normalizeOrdenPayload';
+
+import './clienteServiceInit';
+import './equipoServiceInit';
+import './tecnicoServiceInit';
+import './tipoTrabajoServiceInit';
 
 function App() {
   const [loading, setLoading] = useState(true);
   const [initialData, setInitialData] = useState(null);
   const [payloadVisual, setPayloadVisual] = useState(null);
+
+  useEffect(() => {
+    ensureAuth();
+  }, []);
 
   useEffect(() => {
     async function fetchMock() {
