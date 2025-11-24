@@ -111,6 +111,7 @@ export function OrdenServicio() {
       <Collapsible
         title="Líneas de servicio"
         main={false}
+        mode="lineaServicio"
         initMode={orden.lineasServicio.length > 0 ? 'expanded' : 'collapsed'}
       >
         {orden.lineasServicio.map((linea, i) => (

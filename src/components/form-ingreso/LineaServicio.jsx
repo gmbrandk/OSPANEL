@@ -25,6 +25,7 @@ export function LineaServicio({ index, data = {}, onDelete, onChange }) {
     resultados,
     isOpen,
     selectedTrabajo,
+    isInitialSelection,
     onChange: onQueryChange,
     abrirResultados,
     cerrarResultados,
@@ -54,29 +55,51 @@ export function LineaServicio({ index, data = {}, onDelete, onChange }) {
   }, [data.descripcion]);
 
   // Cuando el usuario selecciona un tipo de trabajo
+  // Cuando se selecciona un tipo de trabajo
   useEffect(() => {
     if (!selectedTrabajo) return;
 
-    log('UI:TRABAJO', 'Tipo trabajo seleccionado', { index, selectedTrabajo });
+    log('UI:TRABAJO', 'Tipo trabajo seleccionado', {
+      index,
+      selectedTrabajo,
+      isInitialSelection,
+      data,
+    });
 
-    const descripcionFinal =
-      !userEditedDescripcion && selectedTrabajo.descripcion
-        ? selectedTrabajo.descripcion.trim()
-        : localDescripcion;
+    // Descripción:
+    // - Respeto backend si viene de initialPayload
+    // - Si el usuario no ha editado, uso descripcion del tipoTrabajo
+    const descripcionFinal = isInitialSelection
+      ? data.descripcion ?? selectedTrabajo.descripcion ?? ''
+      : !userEditedDescripcion && selectedTrabajo.descripcion
+      ? selectedTrabajo.descripcion.trim()
+      : localDescripcion;
 
-    const precioNuevo = selectedTrabajo.precioBase ?? data.precioUnitario ?? 0;
+    // PRECIO:
+    const precioFinal = isInitialSelection
+      ? Number(data.precioUnitario) // <-- respeto backend
+      : Number(selectedTrabajo.precioBase); // <-- solo para selección manual
 
-    if (precioOriginalRef.current === null)
-      precioOriginalRef.current = precioNuevo;
+    // Guardar el ORIGINAL correcto:
+    if (precioOriginalRef.current === null) {
+      precioOriginalRef.current = isInitialSelection
+        ? Number(data.precioUnitario)
+        : Number(selectedTrabajo.precioBase);
+    }
 
     const patch = {
       tipoTrabajo: selectedTrabajo,
       descripcion: descripcionFinal,
-      precioUnitario: precioNuevo,
     };
 
-    log('UI:TRABAJO', 'Aplicando patch por selección de tipoTrabajo', {
+    // Solo rellenar precioUnitario si NO es inicial
+    if (!isInitialSelection) {
+      patch.precioUnitario = precioFinal;
+    }
+
+    log('UI:TRABAJO', 'Aplicando patch corregido', {
       index,
+      isInitialSelection,
       patch,
     });
 
@@ -144,6 +167,7 @@ export function LineaServicio({ index, data = {}, onDelete, onChange }) {
         <label>Descripción</label>
         <input
           type="text"
+          data-descripcion
           className="input-field"
           value={localDescripcion}
           onChange={(e) => {

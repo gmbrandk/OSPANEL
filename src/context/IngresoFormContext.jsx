@@ -214,7 +214,12 @@ export function IngresoFormProvider({ children, initialPayload = null }) {
 
     if (data.tecnico) {
       console.log('🔍 Fetching TÉCNICO by ID:', data.tecnico);
-      const raw = await buscarTecnicoPorId(data.tecnico);
+
+      const tecnicoId =
+        typeof data.tecnico === 'string' ? data.tecnico : data.tecnico._id;
+
+      const raw = await buscarTecnicoPorId(tecnicoId);
+
       console.log('📥 Técnico lookup RAW:', raw);
       tecnicoObj = extractRecord(raw, 'tecnico');
     }

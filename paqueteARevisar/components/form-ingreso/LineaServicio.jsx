@@ -23,30 +23,37 @@ export function LineaServicio({ index, data = {}, onDelete, onChange }) {
   // Guardar precioOriginal cuando seleccionamos desde el autocomplete
   const precioOriginalRef = useRef(null);
 
+  // 1️⃣ Guardar precio original solamente cuando llega la data inicial
+  useEffect(() => {
+    if (data && precioOriginalRef.current === null) {
+      if (data.precioUnitario !== undefined && data.precioUnitario !== null) {
+        precioOriginalRef.current = Number(data.precioUnitario);
+      }
+    }
+  }, [data]);
+
+  // 2️⃣ Actualización cuando seleccionas desde autocomplete
   useEffect(() => {
     if (selectedTrabajo) {
       const desc = data.descripcion ?? selectedTrabajo.nombre ?? '';
       const precio = data.precioUnitario ?? selectedTrabajo.precioBase ?? null;
 
-      // si no existe precioUnitario en data, llenamos con precioBase
-      if (
-        typeof data.precioUnitario === 'undefined' ||
-        data.precioUnitario === null
-      ) {
+      if (data.precioUnitario === undefined || data.precioUnitario === null) {
         onChange({
           tipoTrabajo: selectedTrabajo,
           descripcion: desc,
           precioUnitario: precio,
         });
       } else {
-        // si ya hay precioUnitario (viene del backend), solo actualizamos tipoTrabajo y descripcion
         onChange({ tipoTrabajo: selectedTrabajo, descripcion: desc });
       }
 
-      // guardamos original para comparación visual
-      precioOriginalRef.current = precio;
+      // 3️⃣ Solo setear si aún no se estableció el original
+      if (precioOriginalRef.current === null) {
+        precioOriginalRef.current = Number(precio);
+      }
     }
-  }, [selectedTrabajo]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [selectedTrabajo]);
 
   const precioActual =
     typeof data.precioUnitario !== 'undefined' && data.precioUnitario !== null

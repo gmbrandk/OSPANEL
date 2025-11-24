@@ -1,8 +1,5 @@
+// context/CollapsibleGroupContext.js
 import { createContext, useCallback, useContext, useReducer } from 'react';
-
-/* ===========================================================
-   🧠 Contexto y reducer para manejar los Collapsibles
-=========================================================== */
 
 const CollapsibleGroupContext = createContext(null);
 
@@ -21,27 +18,26 @@ function groupReducer(state, action) {
 
     case 'OPEN': {
       const { id, index } = action.payload;
-      // console.log(
-      //   `%c[GROUP] 🔵 "${id}" se abrió → cerrando previos`,
-      //   'color: #39f'
-      // );
 
-      const updated = state.collapsibles.map((col) => {
-        if (col.index < index && col.main && !col.openedByUser.current) {
-          // console.log(
-          //   `%c[GROUP] 🔴 Cerrando anterior: "${col.id}" (deferido)`,
-          //   'color: #f55'
-          // );
+      // Cerrar previos (deferimos setOpen para no setState en render)
+      state.collapsibles.forEach((col) => {
+        // Si es el mismo id, saltar
+        if (col.id === id) return;
 
-          // ✅ Diferir el cierre para evitar setState durante render
+        // Si fue abierto manualmente por el usuario, respetar
+        if (col.openedByUser?.current) return;
+
+        // Si el collapsible está antes en el orden (index menor), cerrarlo
+        // Ajusta esta lógica si prefieres basarte en otra cosa (por ejemplo: grupo/parent)
+        if (typeof col.index === 'number' && col.index < index) {
           requestAnimationFrame(() => {
             col.setOpen(false);
           });
         }
-        return col;
       });
 
-      return { ...state, collapsibles: updated };
+      // no mutamos la lista, solo devolvemos el estado intacto
+      return state;
     }
 
     default:
@@ -49,32 +45,16 @@ function groupReducer(state, action) {
   }
 }
 
-/* ===========================================================
-   🧩 Provider
-=========================================================== */
 export function CollapsibleGroupProvider({ children }) {
   const [state, dispatch] = useReducer(groupReducer, { collapsibles: [] });
 
   const registerCollapsible = useCallback((id, index, api) => {
     dispatch({ type: 'REGISTER', payload: { id, index, ...api } });
-    // console.log(
-    //   `%c[GROUP] 📋 Registrado collapsible: "${id}" (index: ${index}, main: ${api.main})`,
-    //   'color: #0ff'
-    // );
   }, []);
 
   const registerOpen = useCallback((id, index) => {
     dispatch({ type: 'OPEN', payload: { id, index } });
   }, []);
-
-  // 🔍 Log de diagnóstico (opcional)
-  // useEffect(() => {
-  //   console.log(
-  //     '%c[GROUP] 🧠 Estado actual:',
-  //     'color: #bbb',
-  //     state.collapsibles
-  //   );
-  // }, [state.collapsibles]);
 
   const value = { registerCollapsible, registerOpen };
 
@@ -85,9 +65,6 @@ export function CollapsibleGroupProvider({ children }) {
   );
 }
 
-/* ===========================================================
-   🧩 Hook
-=========================================================== */
 export function useCollapsibleGroup() {
   return useContext(CollapsibleGroupContext);
 }

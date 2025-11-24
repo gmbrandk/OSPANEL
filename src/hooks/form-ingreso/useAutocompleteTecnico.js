@@ -19,27 +19,33 @@ export function useAutocompleteTecnico(initialValue = null, minLength = 2) {
   const [isOpen, setIsOpen] = useState(false);
 
   const isSelecting = useRef(false);
+  const loadedInitially = useRef(true);
 
   // ============================================================
-  // 🟦 Inicializar desde initialValue
+  // Inicializar desde external initialValue (NO abrir dropdown)
   // ============================================================
   useEffect(() => {
     if (!initialValue) {
       setSelectedTecnico(EMPTY_TECNICO);
       setQuery('');
+      setIsOpen(false);
+      loadedInitially.current = false;
       return;
     }
 
     const normalized = normalizarTecnico(initialValue);
+
     setSelectedTecnico((prev) =>
       JSON.stringify(prev) === JSON.stringify(normalized) ? prev : normalized
     );
 
     setQuery(normalized.nombreCompleto || '');
+    setIsOpen(false);
+    loadedInitially.current = true;
   }, [initialValue]);
 
   // ============================================================
-  // 🔍 Debounced búsqueda
+  // Debounced búsqueda
   // ============================================================
   useEffect(() => {
     if (isSelecting.current) return;
@@ -47,17 +53,21 @@ export function useAutocompleteTecnico(initialValue = null, minLength = 2) {
 
     const timeout = setTimeout(() => {
       buscarTecnicos(query.trim());
-      setIsOpen(true);
+
+      if (!loadedInitially.current) {
+        setIsOpen(true);
+      }
     }, 350);
 
     return () => clearTimeout(timeout);
   }, [query, minLength, buscarTecnicos]);
 
   // ============================================================
-  // 🎯 Selección + lookup
+  // Seleccionar técnico y hacer lookup completo
   // ============================================================
   const seleccionarTecnico = async (tParcial) => {
     isSelecting.current = true;
+    loadedInitially.current = false;
 
     setQuery(tParcial.nombreCompleto || '');
     setIsOpen(false);
@@ -73,25 +83,22 @@ export function useAutocompleteTecnico(initialValue = null, minLength = 2) {
   };
 
   const onQueryChange = (value) => {
+    loadedInitially.current = false;
     setQuery(value);
     setIsOpen(true);
   };
 
   return {
     query,
-    resultados: (() => {
-      // console.log(
-      //   '%c[AUTOCOMPLETE TECNICO] Resultados recibidos:',
-      //   'color: #4CAF50',
-      //   tecnicos
-      // );
-      return tecnicos;
-    })(),
+    resultados: tecnicos,
     selectedTecnico,
     isOpen,
     onQueryChange,
     seleccionarTecnico,
-    abrirResultados: () => setIsOpen(true),
+    abrirResultados: () => {
+      loadedInitially.current = false;
+      setIsOpen(true);
+    },
     cerrarResultados: () => setTimeout(() => setIsOpen(false), 150),
   };
 }

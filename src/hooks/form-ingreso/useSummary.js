@@ -1,111 +1,180 @@
+// hooks/form-ingreso/useSummary.js
 import { useCallback, useEffect, useState } from 'react';
+import { useIngresoForm } from '../../context/IngresoFormContext';
 
 /**
- * Hook que calcula el resumen dinámico de un fieldset del formulario de ingreso.
- *
- * Detecta automáticamente el tipo según los campos presentes en el contenido:
- * - Cliente
- * - Equipo
- * - Líneas de servicio
- * - Ficha técnica
+ * useSummary({ containerRef, mode })
+ * mode = cliente | equipo | orden | lineaServicio | ficha | auto
  */
-export function useSummary(containerRef) {
-  const [summary, setSummary] = useState('');
+export function useSummary({ containerRef = null, mode = 'auto' } = {}) {
+  let formCtx = null;
+  try {
+    formCtx = useIngresoForm();
+  } catch {
+    formCtx = null;
+  }
 
-  const computeSummary = useCallback(() => {
-    const el = containerRef?.current;
-    if (!el) return '';
+  const truncate = (str, max = 40) =>
+    str.length > max ? str.slice(0, max).trim() + '…' : str;
 
-    if (isCliente(el)) return getClienteSummary(el);
-    if (isEquipo(el)) return getEquipoSummary(el);
-    if (isLineasServicio(el)) return getLineasServicioSummary(el);
-    if (isFichaTecnica(el)) return getFichaTecnicaSummary(el);
+  const summaryFromState = useCallback(() => {
+    if (!formCtx) return '';
+
+    const { cliente, equipo, orden } = formCtx;
+
+    // ------------------------
+    // CLIENTE
+    // ------------------------
+    if (
+      (mode === 'cliente' || mode === 'auto') &&
+      cliente &&
+      (cliente.nombres || cliente.apellidos || cliente.dni)
+    ) {
+      const n = (cliente.nombres || '').trim();
+      const a = (cliente.apellidos || '').trim();
+      const d = (cliente.dni || '').trim();
+      return `${n} ${a}`.trim() + (d ? ` — DNI ${d}` : '');
+    }
+
+    // ------------------------
+    // EQUIPO
+    // ------------------------
+    if (
+      (mode === 'equipo' || mode === 'auto') &&
+      equipo &&
+      (equipo.marca || equipo.modelo || equipo.nroSerie)
+    ) {
+      const marca = (equipo.marca || '').trim();
+      const modelo = (equipo.modelo || '').trim();
+      const nro = (equipo.nroSerie || equipo._id || '').trim();
+      return `${marca} ${modelo}`.trim() + (nro ? ` — ${nro}` : '');
+    }
+
+    // ------------------------
+    // ORDEN (usa truncate)
+    // ------------------------
+    if (
+      (mode === 'orden' || mode === 'auto') &&
+      orden &&
+      Array.isArray(orden.lineasServicio) &&
+      orden.lineasServicio.length > 0
+    ) {
+      const descs = orden.lineasServicio
+        .map((l) => (l.descripcion || l.tipoTrabajo?.nombre || '').trim())
+        .filter(Boolean)
+        .slice(0, 3)
+        .join(', ');
+
+      return descs ? truncate(descs) : 'Sin líneas';
+    }
+
+    // ------------------------
+    // LÍNEA DE SERVICIO (usa truncate)
+    // ------------------------
+    if (
+      (mode === 'lineaServicio' || mode === 'auto') &&
+      orden &&
+      Array.isArray(orden.lineasServicio) &&
+      orden.lineasServicio.length > 0
+    ) {
+      const descs = orden.lineasServicio
+        .map((l) => (l.descripcion || l.tipoTrabajo?.nombre || '').trim())
+        .filter(Boolean)
+        .slice(0, 3)
+        .join(', ');
+
+      return descs ? truncate(descs) : 'Sin líneas';
+    }
+
+    // ------------------------
+    // FICHA TÉCNICA (corregido)
+    // ------------------------
+    if (mode === 'ficha') {
+      const fs = containerRef?.current;
+      const q = (s) => (fs?.querySelector(s)?.value || '').trim();
+
+      const cpu =
+        q('[name="procesador"]') || q('[name="fichaTecnicaManual[cpu]"]');
+      const ram = q('[name="ram"]') || q('[name="fichaTecnicaManual[ram]"]');
+
+      if (cpu || ram) {
+        return `${cpu || 'CPU?'}${ram ? ' | ' + ram : ''}`;
+      }
+    }
 
     return '';
-  }, [containerRef]);
+  }, [formCtx, mode, containerRef]);
 
-  // Cada vez que haya cambios dentro del fieldset → actualizar resumen
+  // ============================
+  // FALLBACK DOM
+  // ============================
+  const computeFromDOM = useCallback(() => {
+    const fs = containerRef?.current;
+    if (!fs) return '';
+
+    const q = (s) => (fs.querySelector(s)?.value || '').trim();
+
+    // cliente
+    if (mode === 'cliente') {
+      const n = q('[name="nombres"]');
+      const a = q('[name="apellidos"]');
+      const d = q('[name="dni"]');
+      if (n || a || d) return `${n} ${a}`.trim() + (d ? ` — DNI ${d}` : '');
+    }
+
+    // equipo
+    if (mode === 'equipo') {
+      const marca = q('[name="marca"]');
+      const modelo = q('[name="modelo"]');
+      const nro = q('[name="nroSerie"]');
+      if (marca || modelo || nro)
+        return `${marca} ${modelo}`.trim() + (nro ? ` — ${nro}` : '');
+    }
+
+    // orden (DOM, con truncate)
+    if (mode === 'orden') {
+      const descs = [...fs.querySelectorAll('[data-descripcion]')]
+        .map((i) => i.value.trim())
+        .filter(Boolean)
+        .join(', ');
+      return descs ? truncate(descs) : '';
+    }
+
+    // ficha técnica (DOM)
+    if (mode === 'ficha') {
+      const cpu = q('[name="fichaTecnicaManual[cpu]"]');
+      const ram = q('[name="fichaTecnicaManual[ram]"]');
+      if (cpu || ram) return `${cpu || 'CPU?'}${ram ? ' | ' + ram : ''}`;
+    }
+
+    return '';
+  }, [containerRef, mode]);
+
+  // ============================
+  // SUMMARY STATE
+  // ============================
+  const [summary, setSummary] = useState(() => {
+    try {
+      return summaryFromState() || computeFromDOM();
+    } catch {
+      return '';
+    }
+  });
+
   useEffect(() => {
-    const el = containerRef?.current;
-    if (!el) return;
-
-    const observer = new MutationObserver(() => {
-      setSummary(computeSummary());
-    });
-
-    observer.observe(el, {
-      subtree: true,
-      childList: true,
-      characterData: true,
-    });
-    const handleInput = () => setSummary(computeSummary());
-    el.addEventListener('input', handleInput);
-
-    // Calcular una vez al montar
-    setSummary(computeSummary());
-
-    return () => {
-      observer.disconnect();
-      el.removeEventListener('input', handleInput);
-    };
-  }, [containerRef, computeSummary]);
+    if (formCtx) {
+      setSummary(summaryFromState());
+      return;
+    }
+    setSummary(computeFromDOM());
+  }, [
+    formCtx
+      ? JSON.stringify([formCtx.cliente, formCtx.equipo, formCtx.orden])
+      : 'no-form',
+    containerRef?.current,
+    summaryFromState,
+    computeFromDOM,
+  ]);
 
   return summary;
-}
-
-/* =====================================================
-   ✅ Detectores
-===================================================== */
-function isCliente(fs) {
-  return fs.querySelector('[name="nombres"]');
-}
-
-function isEquipo(fs) {
-  return fs.querySelector('[name="marca"]');
-}
-
-function isLineasServicio(fs) {
-  return fs.querySelector('#lineasServicioContainer');
-}
-
-function isFichaTecnica(fs) {
-  return fs.querySelector('[name="fichaTecnicaManual[cpu]"]');
-}
-
-/* =====================================================
-   ✅ Generadores de resumen
-===================================================== */
-
-function getClienteSummary(fs) {
-  const n = fs.querySelector('[name="nombres"]')?.value.trim() || '';
-  const a = fs.querySelector('[name="apellidos"]')?.value.trim() || '';
-  const d = fs.querySelector('[name="dni"]')?.value.trim() || '';
-  if (!n && !a && !d) return '';
-  return `${n} ${a} — DNI ${d}`;
-}
-
-function getEquipoSummary(fs) {
-  const marca = fs.querySelector('[name="marca"]')?.value.trim() || '';
-  const modelo = fs.querySelector('[name="modelo"]')?.value.trim() || '';
-  const nro = fs.querySelector('[name="nroSerie"]')?.value.trim() || '';
-  if (!marca && !modelo && !nro) return '';
-  return `${marca} ${modelo}${nro ? ' — ' + nro : ''}`;
-}
-
-function getLineasServicioSummary(fs) {
-  const descs = [...fs.querySelectorAll('[data-descripcion]')]
-    .map((i) => i.value.trim())
-    .filter((v) => v)
-    .join(', ');
-
-  return descs || 'Sin líneas';
-}
-
-function getFichaTecnicaSummary(fs) {
-  const cpu =
-    fs.querySelector('[name="fichaTecnicaManual[cpu]"]')?.value.trim() || '';
-  const ram =
-    fs.querySelector('[name="fichaTecnicaManual[ram]"]')?.value.trim() || '';
-  if (!cpu && !ram) return '';
-  return `${cpu || 'CPU?'} | ${ram || 'RAM?'}`;
 }

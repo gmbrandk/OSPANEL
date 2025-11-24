@@ -1,95 +1,95 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useIsFirstRender } from '../useIsFirstRender';
+// hooks/form-ingreso/useCollapsible.js
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 
-export function useCollapsible({
-  defaultOpen = false,
-  title = 'Untitled',
-} = {}) {
+export function useCollapsible({ defaultOpen }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const contentRef = useRef(null);
+  const isAnimating = useRef(false);
   const openedByUser = useRef(false);
-  const isFirst = useIsFirstRender();
 
-  const expand = useCallback((el) => {
+  /* =====================================================
+     🔥 Motor de animación EXACTO al original
+  ===================================================== */
+
+  const expand = useCallback(() => {
+    const el = contentRef.current;
     if (!el) return;
-    el.style.transition = '';
+
+    isAnimating.current = true;
+
     el.style.maxHeight = 'none';
+    el.offsetHeight;
     const fullHeight = el.scrollHeight + 'px';
+
     el.style.maxHeight = '0px';
     el.style.opacity = '0';
 
     requestAnimationFrame(() => {
-      el.style.transition =
-        'max-height 0.35s ease, opacity 0.35s ease, padding 0.25s ease';
+      el.style.transition = 'max-height 0.35s ease, opacity 0.35s ease';
       el.style.maxHeight = fullHeight;
       el.style.opacity = '1';
 
-      const handler = (e) => {
-        if (e.propertyName === 'max-height') {
-          el.style.maxHeight = 'none';
-          el.style.transition = '';
-          el.removeEventListener('transitionend', handler);
-        }
+      const onEnd = () => {
+        el.style.transition = '';
+        el.style.maxHeight = 'none';
+        el.removeEventListener('transitionend', onEnd);
+        isAnimating.current = false;
       };
-      el.addEventListener('transitionend', handler);
+      el.addEventListener('transitionend', onEnd);
     });
   }, []);
 
-  const collapse = useCallback((el) => {
-    if (!el) return;
-    if (!el.style.maxHeight || el.style.maxHeight === 'none') {
-      el.style.maxHeight = el.scrollHeight + 'px';
-    }
-    el.offsetHeight; // fuerza reflow
-    requestAnimationFrame(() => {
-      el.style.transition =
-        'max-height 0.35s ease, opacity 0.35s ease, padding 0.25s ease';
-      el.style.maxHeight = '0px';
-      el.style.opacity = '0';
-      const handler = (e) => {
-        if (e.propertyName === 'max-height') {
-          el.style.transition = '';
-          el.removeEventListener('transitionend', handler);
-        }
-      };
-      el.addEventListener('transitionend', handler);
-    });
-  }, []);
-
-  useEffect(() => {
+  const collapse = useCallback(() => {
     const el = contentRef.current;
     if (!el) return;
 
-    if (isFirst) {
-      // Estado inicial sin animación
-      el.style.maxHeight = isOpen ? 'none' : '0px';
-      el.style.opacity = isOpen ? '1' : '0';
-      // console.log(
-      //   `%c[HOOK] 🟢 "${title}" montado con estado inicial: ${
-      //     isOpen ? 'expanded' : 'collapsed'
-      //   }`,
-      //   'color:#7f7'
-      // );
-      return;
+    isAnimating.current = true;
+
+    if (!el.style.maxHeight || el.style.maxHeight === 'none') {
+      el.style.maxHeight = el.scrollHeight + 'px';
     }
 
-    // console.log(
-    //   `%c[HOOK] 🔄 "${title}" ahora está ${isOpen ? 'abierto' : 'cerrado'}`,
-    //   'color:#0af'
-    // );
+    el.offsetHeight;
 
-    if (isOpen) expand(el);
-    else collapse(el);
-  }, [isOpen, expand, collapse, title, isFirst]);
+    requestAnimationFrame(() => {
+      el.style.transition = 'max-height 0.35s ease, opacity 0.35s ease';
+      el.style.maxHeight = '0px';
+      el.style.opacity = '0';
 
-  const toggle = useCallback(() => {
-    // console.log(`%c[HOOK] ⚪️ toggle() llamado para "${title}"`, 'color:#ccc');
-    setIsOpen((prev) => {
-      const next = !prev;
-      if (next) openedByUser.current = true;
-      return next;
+      const onEnd = () => {
+        el.style.transition = '';
+        el.removeEventListener('transitionend', onEnd);
+        isAnimating.current = false;
+      };
+      el.addEventListener('transitionend', onEnd);
     });
-  }, [title]);
+  }, []);
 
-  return { isOpen, toggle, contentRef, setOpen: setIsOpen, openedByUser };
+  /* =====================================================
+     🔄 Reaccionar cuando isOpen cambia
+  ===================================================== */
+  useLayoutEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+
+    if (isOpen) {
+      expand();
+    } else {
+      collapse();
+    }
+  }, [isOpen, expand, collapse]);
+
+  const toggle = () => {
+    openedByUser.current = true;
+    setIsOpen((prev) => !prev);
+  };
+
+  return {
+    isOpen,
+    toggle,
+    setOpen: setIsOpen,
+    openedByUser,
+    contentRef,
+    isAnimating: () => isAnimating.current,
+  };
 }

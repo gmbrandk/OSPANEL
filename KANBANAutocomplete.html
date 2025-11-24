@@ -1,0 +1,468 @@
+<head>
+  <title>KANBAN — Autocomplete System Refactor & UX Improvements</title>
+</head>
+<div
+  data-message-author-role="assistant"
+  data-message-id="b705b39b-789f-4120-a764-8b01a6413f54"
+  dir="auto"
+  class="min-h-8 text-message relative flex w-full flex-col items-end gap-2 text-start break-words whitespace-normal [.text-message+&amp;]:mt-1"
+  data-message-model-slug="gpt-5-1"
+>
+  <div class="flex w-full flex-col gap-1 empty:hidden first:pt-[1px]">
+    <div
+      class="markdown prose dark:prose-invert w-full break-words dark markdown-new-styling"
+    >
+      <p data-start="0" data-end="71">
+        Perfecto.<br data-start="9" data-end="12" />
+        Con lo que ya hemos conversado y conociendo cómo funcionan:
+      </p>
+      <ul data-start="73" data-end="242">
+        <li data-start="73" data-end="94">
+          <p data-start="75" data-end="94">tus autocompletes</p>
+        </li>
+        <li data-start="95" data-end="156">
+          <p data-start="97" data-end="156">
+            el flujo interno (debounce, lookup, sync con initialData)
+          </p>
+        </li>
+        <li data-start="157" data-end="203">
+          <p data-start="159" data-end="203">
+            la interacción con el formulario principal
+          </p>
+        </li>
+        <li data-start="204" data-end="224">
+          <p data-start="206" data-end="224">la normalización</p>
+        </li>
+        <li data-start="225" data-end="242">
+          <p data-start="227" data-end="242">la UX deseada</p>
+        </li>
+      </ul>
+      <p data-start="244" data-end="344">
+        …te puedo generar un
+        <strong data-start="265" data-end="298"
+          >KANBAN realista y profesional</strong
+        >, como el que verías en un equipo de producto.
+      </p>
+      <hr data-start="346" data-end="349" />
+      <h1 data-start="351" data-end="416">
+        🗂️
+        <strong data-start="357" data-end="416"
+          >KANBAN — Autocomplete System Refactor &amp; UX Improvements</strong
+        >
+      </h1>
+      <p data-start="418" data-end="503">
+        A continuación lo divido en
+        <strong data-start="446" data-end="470">TO DO → DOING → DONE</strong>, y
+        cada tarea está pensada para:
+      </p>
+      <ul data-start="505" data-end="666">
+        <li data-start="505" data-end="544">
+          <p data-start="507" data-end="544">
+            mejorar la consistencia del sistema
+          </p>
+        </li>
+        <li data-start="545" data-end="569">
+          <p data-start="547" data-end="569">eliminar duplicación</p>
+        </li>
+        <li data-start="570" data-end="593">
+          <p data-start="572" data-end="593">evitar bugs futuros</p>
+        </li>
+        <li data-start="594" data-end="623">
+          <p data-start="596" data-end="623">mejorar la mantenibilidad</p>
+        </li>
+        <li data-start="624" data-end="666">
+          <p data-start="626" data-end="666">
+            estandarizar la experiencia de usuario
+          </p>
+        </li>
+      </ul>
+      <hr data-start="668" data-end="671" />
+      <h1 data-start="673" data-end="715">
+        🟦 <strong data-start="678" data-end="687">TO DO</strong> (Pendientes /
+        Recomendados)
+      </h1>
+      <h2 data-start="717" data-end="758">
+        <strong data-start="720" data-end="758"
+          >1. Crear un hook base reutilizable</strong
+        >
+      </h2>
+      <p data-start="759" data-end="782">
+        <code data-start="759" data-end="782">useAutocompleteBase()</code>
+      </p>
+      <ul data-start="783" data-end="982">
+        <li data-start="783" data-end="818">
+          <p data-start="785" data-end="818">
+            Estado:
+            <code data-start="793" data-end="818">query, selected, isOpen</code>
+          </p>
+        </li>
+        <li data-start="819" data-end="860">
+          <p data-start="821" data-end="860">
+            Flags: <code data-start="828" data-end="841">isSelecting</code>,
+            <code data-start="843" data-end="860">loadedInitially</code>
+          </p>
+        </li>
+        <li data-start="861" data-end="891">
+          <p data-start="863" data-end="891">Cierre abierto/click-outside</p>
+        </li>
+        <li data-start="892" data-end="963">
+          <p data-start="894" data-end="963">
+            Configuración:<br data-start="908" data-end="911" />
+            <code data-start="913" data-end="963"
+              >{ minLength, normalizer, searchFn, fetchByIdFn }</code
+            >
+          </p>
+        </li>
+        <li data-start="964" data-end="982">
+          <p data-start="966" data-end="982">Eventos estándar</p>
+        </li>
+      </ul>
+      <p data-start="984" data-end="1050">
+        ✔ Reduce 70% del código duplicado entre Cliente, Equipo y Técnico.
+      </p>
+      <hr data-start="1052" data-end="1055" />
+      <h2 data-start="1057" data-end="1101">
+        <strong data-start="1060" data-end="1101"
+          >2. Crear un estándar de normalización</strong
+        >
+      </h2>
+      <p data-start="1102" data-end="1195">
+        Actualmente tienes
+        <code data-start="1121" data-end="1140">normalizarCliente</code>,
+        <code data-start="1142" data-end="1160">normalizarEquipo</code>,
+        <code data-start="1162" data-end="1181">normalizarTecnico</code>.<br
+          data-start="1182"
+          data-end="1185"
+        />
+        Propuesta:
+      </p>
+      <ul data-start="1197" data-end="1316">
+        <li data-start="1197" data-end="1222">
+          <p data-start="1199" data-end="1222">
+            Carpeta <code data-start="1207" data-end="1222">/normalizers/</code>
+          </p>
+        </li>
+        <li data-start="1223" data-end="1276">
+          <p data-start="1225" data-end="1276">
+            Exportar un
+            <code data-start="1237" data-end="1263"
+              >createNormalizer(schema)</code
+            >
+            reutilizable
+          </p>
+        </li>
+        <li data-start="1277" data-end="1316">
+          <p data-start="1279" data-end="1316">
+            Garantizar tipos consistentes siempre
+          </p>
+        </li>
+      </ul>
+      <p data-start="1318" data-end="1409">
+        ✔ Te asegura que todos los autocomplete siempre trabajen con objetos
+        completamente limpios.
+      </p>
+      <hr data-start="1411" data-end="1414" />
+      <h2 data-start="1416" data-end="1477">
+        <strong data-start="1419" data-end="1477"
+          >3. Unificar UI en un único componente AutocompleteBase</strong
+        >
+      </h2>
+      <p data-start="1478" data-end="1534">
+        Ahora cada uno tiene su propio HTML/render.<br
+          data-start="1521"
+          data-end="1524"
+        />
+        Propuesta:
+      </p>
+      <ul data-start="1536" data-end="1711">
+        <li data-start="1536" data-end="1568">
+          <p data-start="1538" data-end="1568">
+            Crear
+            <code data-start="1544" data-end="1566"
+              >&lt;AutocompleteBase /&gt;</code
+            >
+          </p>
+        </li>
+        <li data-start="1569" data-end="1711">
+          <p data-start="1571" data-end="1587">Recibir props:</p>
+          <ul data-start="1590" data-end="1711">
+            <li data-start="1590" data-end="1624">
+              <p data-start="1592" data-end="1624">
+                <code data-start="1592" data-end="1599">label</code>,
+                <code data-start="1601" data-end="1607">icon</code>,
+                <code data-start="1609" data-end="1622">placeholder</code>
+              </p>
+            </li>
+            <li data-start="1627" data-end="1662">
+              <p data-start="1629" data-end="1662">
+                <code data-start="1629" data-end="1636">value</code>,
+                <code data-start="1638" data-end="1648">onChange</code>,
+                <code data-start="1650" data-end="1660">onSelect</code>
+              </p>
+            </li>
+            <li data-start="1665" data-end="1687">
+              <p data-start="1667" data-end="1687">
+                <code data-start="1667" data-end="1685">renderItem(item)</code>
+              </p>
+            </li>
+            <li data-start="1690" data-end="1711">
+              <p data-start="1692" data-end="1711">
+                <code data-start="1692" data-end="1709">showValue(item)</code>
+              </p>
+            </li>
+          </ul>
+        </li>
+      </ul>
+      <p data-start="1713" data-end="1756">
+        ✔ Solo el "item" cambia, no la interacción.
+      </p>
+      <hr data-start="1758" data-end="1761" />
+      <h2 data-start="1763" data-end="1814">
+        <strong data-start="1766" data-end="1814"
+          >4. Implementar manejo de “no hay resultados”</strong
+        >
+      </h2>
+      <p data-start="1815" data-end="1839">Agregar estado y render:</p>
+      <pre
+        class="overflow-visible!"
+        data-start="1841"
+        data-end="1909"
+      ><div class="contain-inline-size rounded-2xl relative bg-token-sidebar-surface-primary"><div class="flex items-center text-token-text-secondary px-4 py-2 text-xs font-sans justify-between h-9 bg-token-sidebar-surface-primary select-none rounded-t-2xl">diff</div><div class="sticky top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"><button class="flex gap-1 items-center select-none py-1" aria-label="Copiar"><svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="icon-sm"><path d="M12.668 10.667C12.668 9.95614 12.668 9.46258 12.6367 9.0791C12.6137 8.79732 12.5758 8.60761 12.5244 8.46387L12.4688 8.33399C12.3148 8.03193 12.0803 7.77885 11.793 7.60254L11.666 7.53125C11.508 7.45087 11.2963 7.39395 10.9209 7.36328C10.5374 7.33197 10.0439 7.33203 9.33301 7.33203H6.5C5.78896 7.33203 5.29563 7.33195 4.91211 7.36328C4.63016 7.38632 4.44065 7.42413 4.29688 7.47559L4.16699 7.53125C3.86488 7.68518 3.61186 7.9196 3.43555 8.20703L3.36524 8.33399C3.28478 8.49198 3.22795 8.70352 3.19727 9.0791C3.16595 9.46259 3.16504 9.95611 3.16504 10.667V13.5C3.16504 14.211 3.16593 14.7044 3.19727 15.0879C3.22797 15.4636 3.28473 15.675 3.36524 15.833L3.43555 15.959C3.61186 16.2466 3.86474 16.4807 4.16699 16.6348L4.29688 16.6914C4.44063 16.7428 4.63025 16.7797 4.91211 16.8027C5.29563 16.8341 5.78896 16.835 6.5 16.835H9.33301C10.0439 16.835 10.5374 16.8341 10.9209 16.8027C11.2965 16.772 11.508 16.7152 11.666 16.6348L11.793 16.5645C12.0804 16.3881 12.3148 16.1351 12.4688 15.833L12.5244 15.7031C12.5759 15.5594 12.6137 15.3698 12.6367 15.0879C12.6681 14.7044 12.668 14.211 12.668 13.5V10.667ZM13.998 12.665C14.4528 12.6634 14.8011 12.6602 15.0879 12.6367C15.4635 12.606 15.675 12.5492 15.833 12.4688L15.959 12.3975C16.2466 12.2211 16.4808 11.9682 16.6348 11.666L16.6914 11.5361C16.7428 11.3924 16.7797 11.2026 16.8027 10.9209C16.8341 10.5374 16.835 10.0439 16.835 9.33301V6.5C16.835 5.78896 16.8341 5.29563 16.8027 4.91211C16.7797 4.63025 16.7428 4.44063 16.6914 4.29688L16.6348 4.16699C16.4807 3.86474 16.2466 3.61186 15.959 3.43555L15.833 3.36524C15.675 3.28473 15.4636 3.22797 15.0879 3.19727C14.7044 3.16593 14.211 3.16504 13.5 3.16504H10.667C9.9561 3.16504 9.46259 3.16595 9.0791 3.19727C8.79739 3.22028 8.6076 3.2572 8.46387 3.30859L8.33399 3.36524C8.03176 3.51923 7.77886 3.75343 7.60254 4.04102L7.53125 4.16699C7.4508 4.32498 7.39397 4.53655 7.36328 4.91211C7.33985 5.19893 7.33562 5.54719 7.33399 6.00195H9.33301C10.022 6.00195 10.5791 6.00131 11.0293 6.03809C11.4873 6.07551 11.8937 6.15471 12.2705 6.34668L12.4883 6.46875C12.984 6.7728 13.3878 7.20854 13.6533 7.72949L13.7197 7.87207C13.8642 8.20859 13.9292 8.56974 13.9619 8.9707C13.9987 9.42092 13.998 9.97799 13.998 10.667V12.665ZM18.165 9.33301C18.165 10.022 18.1657 10.5791 18.1289 11.0293C18.0961 11.4302 18.0311 11.7914 17.8867 12.1279L17.8203 12.2705C17.5549 12.7914 17.1509 13.2272 16.6553 13.5313L16.4365 13.6533C16.0599 13.8452 15.6541 13.9245 15.1963 13.9619C14.8593 13.9895 14.4624 13.9935 13.9951 13.9951C13.9935 14.4624 13.9895 14.8593 13.9619 15.1963C13.9292 15.597 13.864 15.9576 13.7197 16.2939L13.6533 16.4365C13.3878 16.9576 12.9841 17.3941 12.4883 17.6982L12.2705 17.8203C11.8937 18.0123 11.4873 18.0915 11.0293 18.1289C10.5791 18.1657 10.022 18.165 9.33301 18.165H6.5C5.81091 18.165 5.25395 18.1657 4.80371 18.1289C4.40306 18.0962 4.04235 18.031 3.70606 17.8867L3.56348 17.8203C3.04244 17.5548 2.60585 17.151 2.30176 16.6553L2.17969 16.4365C1.98788 16.0599 1.90851 15.6541 1.87109 15.1963C1.83431 14.746 1.83496 14.1891 1.83496 13.5V10.667C1.83496 9.978 1.83432 9.42091 1.87109 8.9707C1.90851 8.5127 1.98772 8.10625 2.17969 7.72949L2.30176 7.51172C2.60586 7.0159 3.04236 6.6122 3.56348 6.34668L3.70606 6.28027C4.04237 6.136 4.40303 6.07083 4.80371 6.03809C5.14051 6.01057 5.53708 6.00551 6.00391 6.00391C6.00551 5.53708 6.01057 5.14051 6.03809 4.80371C6.0755 4.34588 6.15483 3.94012 6.34668 3.56348L6.46875 3.34473C6.77282 2.84912 7.20856 2.44514 7.72949 2.17969L7.87207 2.11328C8.20855 1.96886 8.56979 1.90385 8.9707 1.87109C9.42091 1.83432 9.978 1.83496 10.667 1.83496H13.5C14.1891 1.83496 14.746 1.83431 15.1963 1.87109C15.6541 1.90851 16.0599 1.98788 16.4365 2.17969L16.6553 2.30176C17.151 2.60585 17.5548 3.04244 17.8203 3.56348L17.8867 3.70606C18.031 4.04235 18.0962 4.40306 18.1289 4.80371C18.1657 5.25395 18.165 5.81091 18.165 6.5V9.33301Z"></path></svg>Copiar código</button></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre!"><span><span><span class="hljs-deletion">- “No se encontraron resultados”</span></span><span>
+</span><span><span class="hljs-deletion">- “Escribe más para buscar”</span></span><span>
+</span></span></code></div></div></pre>
+      <p data-start="1911" data-end="1955">
+        ✔ Mejora la UX y evita sensación de “falla”.
+      </p>
+      <hr data-start="1957" data-end="1960" />
+      <h2 data-start="1962" data-end="2011">
+        <strong data-start="1965" data-end="2011"
+          >5. Añadir test unitarios de comportamiento</strong
+        >
+      </h2>
+      <p data-start="2012" data-end="2035">Para cada autocomplete:</p>
+      <ul data-start="2037" data-end="2181">
+        <li data-start="2037" data-end="2071">
+          <p data-start="2039" data-end="2071">
+            Carga inicial NO abre dropdown
+          </p>
+        </li>
+        <li data-start="2072" data-end="2094">
+          <p data-start="2074" data-end="2094">Escribir → sí abre</p>
+        </li>
+        <li data-start="2095" data-end="2119">
+          <p data-start="2097" data-end="2119">Seleccionar → cierra</p>
+        </li>
+        <li data-start="2120" data-end="2153">
+          <p data-start="2122" data-end="2153">Seleccionar → lookup correcto</p>
+        </li>
+        <li data-start="2154" data-end="2181">
+          <p data-start="2156" data-end="2181">query corto → no buscar</p>
+        </li>
+      </ul>
+      <p data-start="2183" data-end="2234">
+        ✔ Previenes regresiones cuando edites el hook base.
+      </p>
+      <hr data-start="2236" data-end="2239" />
+      <h2 data-start="2241" data-end="2278">
+        <strong data-start="2244" data-end="2278"
+          >6. Manejo de teclado accesible</strong
+        >
+      </h2>
+      <ul data-start="2279" data-end="2377">
+        <li data-start="2279" data-end="2318">
+          <p data-start="2281" data-end="2318">
+            ENTER = seleccionar primer elemento
+          </p>
+        </li>
+        <li data-start="2319" data-end="2335">
+          <p data-start="2321" data-end="2335">ESC = cerrar</p>
+        </li>
+        <li data-start="2336" data-end="2364">
+          <p data-start="2338" data-end="2364">↑ / ↓ para navegar lista</p>
+        </li>
+        <li data-start="2365" data-end="2377">
+          <p data-start="2367" data-end="2377">Focus trap</p>
+        </li>
+      </ul>
+      <p data-start="2379" data-end="2422">
+        ✔ Mejora usabilidad y accesibilidad (A11y).
+      </p>
+      <hr data-start="2424" data-end="2427" />
+      <h2 data-start="2429" data-end="2469">
+        <strong data-start="2432" data-end="2469"
+          >7. Agregar click-outside con hook</strong
+        >
+      </h2>
+      <p data-start="2470" data-end="2482">Implementar:</p>
+      <pre
+        class="overflow-visible!"
+        data-start="2484"
+        data-end="2538"
+      ><div class="contain-inline-size rounded-2xl relative bg-token-sidebar-surface-primary"><div class="flex items-center text-token-text-secondary px-4 py-2 text-xs font-sans justify-between h-9 bg-token-sidebar-surface-primary select-none rounded-t-2xl">js</div><div class="sticky top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"><button class="flex gap-1 items-center select-none py-1" aria-label="Copiar"><svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="icon-sm"><path d="M12.668 10.667C12.668 9.95614 12.668 9.46258 12.6367 9.0791C12.6137 8.79732 12.5758 8.60761 12.5244 8.46387L12.4688 8.33399C12.3148 8.03193 12.0803 7.77885 11.793 7.60254L11.666 7.53125C11.508 7.45087 11.2963 7.39395 10.9209 7.36328C10.5374 7.33197 10.0439 7.33203 9.33301 7.33203H6.5C5.78896 7.33203 5.29563 7.33195 4.91211 7.36328C4.63016 7.38632 4.44065 7.42413 4.29688 7.47559L4.16699 7.53125C3.86488 7.68518 3.61186 7.9196 3.43555 8.20703L3.36524 8.33399C3.28478 8.49198 3.22795 8.70352 3.19727 9.0791C3.16595 9.46259 3.16504 9.95611 3.16504 10.667V13.5C3.16504 14.211 3.16593 14.7044 3.19727 15.0879C3.22797 15.4636 3.28473 15.675 3.36524 15.833L3.43555 15.959C3.61186 16.2466 3.86474 16.4807 4.16699 16.6348L4.29688 16.6914C4.44063 16.7428 4.63025 16.7797 4.91211 16.8027C5.29563 16.8341 5.78896 16.835 6.5 16.835H9.33301C10.0439 16.835 10.5374 16.8341 10.9209 16.8027C11.2965 16.772 11.508 16.7152 11.666 16.6348L11.793 16.5645C12.0804 16.3881 12.3148 16.1351 12.4688 15.833L12.5244 15.7031C12.5759 15.5594 12.6137 15.3698 12.6367 15.0879C12.6681 14.7044 12.668 14.211 12.668 13.5V10.667ZM13.998 12.665C14.4528 12.6634 14.8011 12.6602 15.0879 12.6367C15.4635 12.606 15.675 12.5492 15.833 12.4688L15.959 12.3975C16.2466 12.2211 16.4808 11.9682 16.6348 11.666L16.6914 11.5361C16.7428 11.3924 16.7797 11.2026 16.8027 10.9209C16.8341 10.5374 16.835 10.0439 16.835 9.33301V6.5C16.835 5.78896 16.8341 5.29563 16.8027 4.91211C16.7797 4.63025 16.7428 4.44063 16.6914 4.29688L16.6348 4.16699C16.4807 3.86474 16.2466 3.61186 15.959 3.43555L15.833 3.36524C15.675 3.28473 15.4636 3.22797 15.0879 3.19727C14.7044 3.16593 14.211 3.16504 13.5 3.16504H10.667C9.9561 3.16504 9.46259 3.16595 9.0791 3.19727C8.79739 3.22028 8.6076 3.2572 8.46387 3.30859L8.33399 3.36524C8.03176 3.51923 7.77886 3.75343 7.60254 4.04102L7.53125 4.16699C7.4508 4.32498 7.39397 4.53655 7.36328 4.91211C7.33985 5.19893 7.33562 5.54719 7.33399 6.00195H9.33301C10.022 6.00195 10.5791 6.00131 11.0293 6.03809C11.4873 6.07551 11.8937 6.15471 12.2705 6.34668L12.4883 6.46875C12.984 6.7728 13.3878 7.20854 13.6533 7.72949L13.7197 7.87207C13.8642 8.20859 13.9292 8.56974 13.9619 8.9707C13.9987 9.42092 13.998 9.97799 13.998 10.667V12.665ZM18.165 9.33301C18.165 10.022 18.1657 10.5791 18.1289 11.0293C18.0961 11.4302 18.0311 11.7914 17.8867 12.1279L17.8203 12.2705C17.5549 12.7914 17.1509 13.2272 16.6553 13.5313L16.4365 13.6533C16.0599 13.8452 15.6541 13.9245 15.1963 13.9619C14.8593 13.9895 14.4624 13.9935 13.9951 13.9951C13.9935 14.4624 13.9895 14.8593 13.9619 15.1963C13.9292 15.597 13.864 15.9576 13.7197 16.2939L13.6533 16.4365C13.3878 16.9576 12.9841 17.3941 12.4883 17.6982L12.2705 17.8203C11.8937 18.0123 11.4873 18.0915 11.0293 18.1289C10.5791 18.1657 10.022 18.165 9.33301 18.165H6.5C5.81091 18.165 5.25395 18.1657 4.80371 18.1289C4.40306 18.0962 4.04235 18.031 3.70606 17.8867L3.56348 17.8203C3.04244 17.5548 2.60585 17.151 2.30176 16.6553L2.17969 16.4365C1.98788 16.0599 1.90851 15.6541 1.87109 15.1963C1.83431 14.746 1.83496 14.1891 1.83496 13.5V10.667C1.83496 9.978 1.83432 9.42091 1.87109 8.9707C1.90851 8.5127 1.98772 8.10625 2.17969 7.72949L2.30176 7.51172C2.60586 7.0159 3.04236 6.6122 3.56348 6.34668L3.70606 6.28027C4.04237 6.136 4.40303 6.07083 4.80371 6.03809C5.14051 6.01057 5.53708 6.00551 6.00391 6.00391C6.00551 5.53708 6.01057 5.14051 6.03809 4.80371C6.0755 4.34588 6.15483 3.94012 6.34668 3.56348L6.46875 3.34473C6.77282 2.84912 7.20856 2.44514 7.72949 2.17969L7.87207 2.11328C8.20855 1.96886 8.56979 1.90385 8.9707 1.87109C9.42091 1.83432 9.978 1.83496 10.667 1.83496H13.5C14.1891 1.83496 14.746 1.83431 15.1963 1.87109C15.6541 1.90851 16.0599 1.98788 16.4365 2.17969L16.6553 2.30176C17.151 2.60585 17.5548 3.04244 17.8203 3.56348L17.8867 3.70606C18.031 4.04235 18.0962 4.40306 18.1289 4.80371C18.1657 5.25395 18.165 5.81091 18.165 6.5V9.33301Z"></path></svg>Copiar código</button></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-js"><span><span><span class="hljs-title function_">useClickOutside</span></span><span>(ref, </span><span><span class="hljs-function">() =&gt;</span></span><span> </span><span><span class="hljs-title function_">setIsOpen</span></span><span>(</span><span><span class="hljs-literal">false</span></span><span>))
+</span></span></code></div></div></pre>
+      <p data-start="2540" data-end="2597">
+        ✔ Hace el componente más natural y evita cierres “raros”.
+      </p>
+      <hr data-start="2599" data-end="2602" />
+      <h2 data-start="2604" data-end="2638">
+        <strong data-start="2607" data-end="2638"
+          >8. Estandarizar animaciones</strong
+        >
+      </h2>
+      <p data-start="2639" data-end="2678">
+        Mover animaciones de apertura/cierre a:
+      </p>
+      <pre
+        class="overflow-visible!"
+        data-start="2680"
+        data-end="2712"
+      ><div class="contain-inline-size rounded-2xl relative bg-token-sidebar-surface-primary"><div class="flex items-center text-token-text-secondary px-4 py-2 text-xs font-sans justify-between h-9 bg-token-sidebar-surface-primary select-none rounded-t-2xl">bash</div><div class="sticky top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"><button class="flex gap-1 items-center select-none py-1" aria-label="Copiar"><svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="icon-sm"><path d="M12.668 10.667C12.668 9.95614 12.668 9.46258 12.6367 9.0791C12.6137 8.79732 12.5758 8.60761 12.5244 8.46387L12.4688 8.33399C12.3148 8.03193 12.0803 7.77885 11.793 7.60254L11.666 7.53125C11.508 7.45087 11.2963 7.39395 10.9209 7.36328C10.5374 7.33197 10.0439 7.33203 9.33301 7.33203H6.5C5.78896 7.33203 5.29563 7.33195 4.91211 7.36328C4.63016 7.38632 4.44065 7.42413 4.29688 7.47559L4.16699 7.53125C3.86488 7.68518 3.61186 7.9196 3.43555 8.20703L3.36524 8.33399C3.28478 8.49198 3.22795 8.70352 3.19727 9.0791C3.16595 9.46259 3.16504 9.95611 3.16504 10.667V13.5C3.16504 14.211 3.16593 14.7044 3.19727 15.0879C3.22797 15.4636 3.28473 15.675 3.36524 15.833L3.43555 15.959C3.61186 16.2466 3.86474 16.4807 4.16699 16.6348L4.29688 16.6914C4.44063 16.7428 4.63025 16.7797 4.91211 16.8027C5.29563 16.8341 5.78896 16.835 6.5 16.835H9.33301C10.0439 16.835 10.5374 16.8341 10.9209 16.8027C11.2965 16.772 11.508 16.7152 11.666 16.6348L11.793 16.5645C12.0804 16.3881 12.3148 16.1351 12.4688 15.833L12.5244 15.7031C12.5759 15.5594 12.6137 15.3698 12.6367 15.0879C12.6681 14.7044 12.668 14.211 12.668 13.5V10.667ZM13.998 12.665C14.4528 12.6634 14.8011 12.6602 15.0879 12.6367C15.4635 12.606 15.675 12.5492 15.833 12.4688L15.959 12.3975C16.2466 12.2211 16.4808 11.9682 16.6348 11.666L16.6914 11.5361C16.7428 11.3924 16.7797 11.2026 16.8027 10.9209C16.8341 10.5374 16.835 10.0439 16.835 9.33301V6.5C16.835 5.78896 16.8341 5.29563 16.8027 4.91211C16.7797 4.63025 16.7428 4.44063 16.6914 4.29688L16.6348 4.16699C16.4807 3.86474 16.2466 3.61186 15.959 3.43555L15.833 3.36524C15.675 3.28473 15.4636 3.22797 15.0879 3.19727C14.7044 3.16593 14.211 3.16504 13.5 3.16504H10.667C9.9561 3.16504 9.46259 3.16595 9.0791 3.19727C8.79739 3.22028 8.6076 3.2572 8.46387 3.30859L8.33399 3.36524C8.03176 3.51923 7.77886 3.75343 7.60254 4.04102L7.53125 4.16699C7.4508 4.32498 7.39397 4.53655 7.36328 4.91211C7.33985 5.19893 7.33562 5.54719 7.33399 6.00195H9.33301C10.022 6.00195 10.5791 6.00131 11.0293 6.03809C11.4873 6.07551 11.8937 6.15471 12.2705 6.34668L12.4883 6.46875C12.984 6.7728 13.3878 7.20854 13.6533 7.72949L13.7197 7.87207C13.8642 8.20859 13.9292 8.56974 13.9619 8.9707C13.9987 9.42092 13.998 9.97799 13.998 10.667V12.665ZM18.165 9.33301C18.165 10.022 18.1657 10.5791 18.1289 11.0293C18.0961 11.4302 18.0311 11.7914 17.8867 12.1279L17.8203 12.2705C17.5549 12.7914 17.1509 13.2272 16.6553 13.5313L16.4365 13.6533C16.0599 13.8452 15.6541 13.9245 15.1963 13.9619C14.8593 13.9895 14.4624 13.9935 13.9951 13.9951C13.9935 14.4624 13.9895 14.8593 13.9619 15.1963C13.9292 15.597 13.864 15.9576 13.7197 16.2939L13.6533 16.4365C13.3878 16.9576 12.9841 17.3941 12.4883 17.6982L12.2705 17.8203C11.8937 18.0123 11.4873 18.0915 11.0293 18.1289C10.5791 18.1657 10.022 18.165 9.33301 18.165H6.5C5.81091 18.165 5.25395 18.1657 4.80371 18.1289C4.40306 18.0962 4.04235 18.031 3.70606 17.8867L3.56348 17.8203C3.04244 17.5548 2.60585 17.151 2.30176 16.6553L2.17969 16.4365C1.98788 16.0599 1.90851 15.6541 1.87109 15.1963C1.83431 14.746 1.83496 14.1891 1.83496 13.5V10.667C1.83496 9.978 1.83432 9.42091 1.87109 8.9707C1.90851 8.5127 1.98772 8.10625 2.17969 7.72949L2.30176 7.51172C2.60586 7.0159 3.04236 6.6122 3.56348 6.34668L3.70606 6.28027C4.04237 6.136 4.40303 6.07083 4.80371 6.03809C5.14051 6.01057 5.53708 6.00551 6.00391 6.00391C6.00551 5.53708 6.01057 5.14051 6.03809 4.80371C6.0755 4.34588 6.15483 3.94012 6.34668 3.56348L6.46875 3.34473C6.77282 2.84912 7.20856 2.44514 7.72949 2.17969L7.87207 2.11328C8.20855 1.96886 8.56979 1.90385 8.9707 1.87109C9.42091 1.83432 9.978 1.83496 10.667 1.83496H13.5C14.1891 1.83496 14.746 1.83431 15.1963 1.87109C15.6541 1.90851 16.0599 1.98788 16.4365 2.17969L16.6553 2.30176C17.151 2.60585 17.5548 3.04244 17.8203 3.56348L17.8867 3.70606C18.031 4.04235 18.0962 4.40306 18.1289 4.80371C18.1657 5.25395 18.165 5.81091 18.165 6.5V9.33301Z"></path></svg>Copiar código</button></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre!"><span><span>/styles/autocomplete.css
+</span></span></code></div></div></pre>
+      <p data-start="2714" data-end="2734">✔ Quita duplicación.</p>
+      <hr data-start="2736" data-end="2739" />
+      <h2 data-start="2741" data-end="2810">
+        <strong data-start="2744" data-end="2810"
+          >9. Crear un throttle para carga inicial en formularios
+          grandes</strong
+        >
+      </h2>
+      <p data-start="2811" data-end="2900">
+        Si futuro tendrás formularios que cargan varios autocompletes a la
+        vez,<br data-start="2882" data-end="2885" />
+        se puede crear:
+      </p>
+      <pre
+        class="overflow-visible!"
+        data-start="2902"
+        data-end="2947"
+      ><div class="contain-inline-size rounded-2xl relative bg-token-sidebar-surface-primary"><div class="flex items-center text-token-text-secondary px-4 py-2 text-xs font-sans justify-between h-9 bg-token-sidebar-surface-primary select-none rounded-t-2xl">scss</div><div class="sticky top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"><button class="flex gap-1 items-center select-none py-1" aria-label="Copiar"><svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="icon-sm"><path d="M12.668 10.667C12.668 9.95614 12.668 9.46258 12.6367 9.0791C12.6137 8.79732 12.5758 8.60761 12.5244 8.46387L12.4688 8.33399C12.3148 8.03193 12.0803 7.77885 11.793 7.60254L11.666 7.53125C11.508 7.45087 11.2963 7.39395 10.9209 7.36328C10.5374 7.33197 10.0439 7.33203 9.33301 7.33203H6.5C5.78896 7.33203 5.29563 7.33195 4.91211 7.36328C4.63016 7.38632 4.44065 7.42413 4.29688 7.47559L4.16699 7.53125C3.86488 7.68518 3.61186 7.9196 3.43555 8.20703L3.36524 8.33399C3.28478 8.49198 3.22795 8.70352 3.19727 9.0791C3.16595 9.46259 3.16504 9.95611 3.16504 10.667V13.5C3.16504 14.211 3.16593 14.7044 3.19727 15.0879C3.22797 15.4636 3.28473 15.675 3.36524 15.833L3.43555 15.959C3.61186 16.2466 3.86474 16.4807 4.16699 16.6348L4.29688 16.6914C4.44063 16.7428 4.63025 16.7797 4.91211 16.8027C5.29563 16.8341 5.78896 16.835 6.5 16.835H9.33301C10.0439 16.835 10.5374 16.8341 10.9209 16.8027C11.2965 16.772 11.508 16.7152 11.666 16.6348L11.793 16.5645C12.0804 16.3881 12.3148 16.1351 12.4688 15.833L12.5244 15.7031C12.5759 15.5594 12.6137 15.3698 12.6367 15.0879C12.6681 14.7044 12.668 14.211 12.668 13.5V10.667ZM13.998 12.665C14.4528 12.6634 14.8011 12.6602 15.0879 12.6367C15.4635 12.606 15.675 12.5492 15.833 12.4688L15.959 12.3975C16.2466 12.2211 16.4808 11.9682 16.6348 11.666L16.6914 11.5361C16.7428 11.3924 16.7797 11.2026 16.8027 10.9209C16.8341 10.5374 16.835 10.0439 16.835 9.33301V6.5C16.835 5.78896 16.8341 5.29563 16.8027 4.91211C16.7797 4.63025 16.7428 4.44063 16.6914 4.29688L16.6348 4.16699C16.4807 3.86474 16.2466 3.61186 15.959 3.43555L15.833 3.36524C15.675 3.28473 15.4636 3.22797 15.0879 3.19727C14.7044 3.16593 14.211 3.16504 13.5 3.16504H10.667C9.9561 3.16504 9.46259 3.16595 9.0791 3.19727C8.79739 3.22028 8.6076 3.2572 8.46387 3.30859L8.33399 3.36524C8.03176 3.51923 7.77886 3.75343 7.60254 4.04102L7.53125 4.16699C7.4508 4.32498 7.39397 4.53655 7.36328 4.91211C7.33985 5.19893 7.33562 5.54719 7.33399 6.00195H9.33301C10.022 6.00195 10.5791 6.00131 11.0293 6.03809C11.4873 6.07551 11.8937 6.15471 12.2705 6.34668L12.4883 6.46875C12.984 6.7728 13.3878 7.20854 13.6533 7.72949L13.7197 7.87207C13.8642 8.20859 13.9292 8.56974 13.9619 8.9707C13.9987 9.42092 13.998 9.97799 13.998 10.667V12.665ZM18.165 9.33301C18.165 10.022 18.1657 10.5791 18.1289 11.0293C18.0961 11.4302 18.0311 11.7914 17.8867 12.1279L17.8203 12.2705C17.5549 12.7914 17.1509 13.2272 16.6553 13.5313L16.4365 13.6533C16.0599 13.8452 15.6541 13.9245 15.1963 13.9619C14.8593 13.9895 14.4624 13.9935 13.9951 13.9951C13.9935 14.4624 13.9895 14.8593 13.9619 15.1963C13.9292 15.597 13.864 15.9576 13.7197 16.2939L13.6533 16.4365C13.3878 16.9576 12.9841 17.3941 12.4883 17.6982L12.2705 17.8203C11.8937 18.0123 11.4873 18.0915 11.0293 18.1289C10.5791 18.1657 10.022 18.165 9.33301 18.165H6.5C5.81091 18.165 5.25395 18.1657 4.80371 18.1289C4.40306 18.0962 4.04235 18.031 3.70606 17.8867L3.56348 17.8203C3.04244 17.5548 2.60585 17.151 2.30176 16.6553L2.17969 16.4365C1.98788 16.0599 1.90851 15.6541 1.87109 15.1963C1.83431 14.746 1.83496 14.1891 1.83496 13.5V10.667C1.83496 9.978 1.83432 9.42091 1.87109 8.9707C1.90851 8.5127 1.98772 8.10625 2.17969 7.72949L2.30176 7.51172C2.60586 7.0159 3.04236 6.6122 3.56348 6.34668L3.70606 6.28027C4.04237 6.136 4.40303 6.07083 4.80371 6.03809C5.14051 6.01057 5.53708 6.00551 6.00391 6.00391C6.00551 5.53708 6.01057 5.14051 6.03809 4.80371C6.0755 4.34588 6.15483 3.94012 6.34668 3.56348L6.46875 3.34473C6.77282 2.84912 7.20856 2.44514 7.72949 2.17969L7.87207 2.11328C8.20855 1.96886 8.56979 1.90385 8.9707 1.87109C9.42091 1.83432 9.978 1.83496 10.667 1.83496H13.5C14.1891 1.83496 14.746 1.83431 15.1963 1.87109C15.6541 1.90851 16.0599 1.98788 16.4365 2.17969L16.6553 2.30176C17.151 2.60585 17.5548 3.04244 17.8203 3.56348L17.8867 3.70606C18.031 4.04235 18.0962 4.40306 18.1289 4.80371C18.1657 5.25395 18.165 5.81091 18.165 6.5V9.33301Z"></path></svg>Copiar código</button></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre!"><span><span><span class="hljs-built_in">loadInitialAutocompleteData</span></span><span>(formData)
+</span></span></code></div></div></pre>
+      <p data-start="2949" data-end="2995">
+        ✔ Evita renders múltiples y cargas duplicadas.
+      </p>
+      <hr data-start="2997" data-end="3000" />
+      <h1 data-start="3002" data-end="3043">
+        🟨 <strong data-start="3007" data-end="3016">DOING</strong> (Ya empezado
+        / en proceso)
+      </h1>
+      <h2 data-start="3045" data-end="3094">
+        <strong data-start="3048" data-end="3094"
+          >✔ Controlar correctamente la carga inicial</strong
+        >
+      </h2>
+      <p data-start="3095" data-end="3143">
+        Esto ya lo empezamos con
+        <code data-start="3120" data-end="3137">loadedInitially</code> para:
+      </p>
+      <ul data-start="3145" data-end="3179">
+        <li data-start="3145" data-end="3156">
+          <p data-start="3147" data-end="3156">Cliente</p>
+        </li>
+        <li data-start="3157" data-end="3167">
+          <p data-start="3159" data-end="3167">Equipo</p>
+        </li>
+        <li data-start="3168" data-end="3179">
+          <p data-start="3170" data-end="3179">Técnico</p>
+        </li>
+      </ul>
+      <p data-start="3181" data-end="3225">
+        Pendiente completarlo en un hook base común.
+      </p>
+      <hr data-start="3227" data-end="3230" />
+      <h2 data-start="3232" data-end="3278">
+        <strong data-start="3235" data-end="3278"
+          >✔ Sincronización segura con initialData</strong
+        >
+      </h2>
+      <p data-start="3279" data-end="3335">
+        Ya estás normalizando y evitando loops por JSON compare.
+      </p>
+      <p data-start="3337" data-end="3376">
+        Pendiente mover la lógica al hook base.
+      </p>
+      <hr data-start="3378" data-end="3381" />
+      <h1 data-start="3383" data-end="3410">
+        🟩 <strong data-start="3388" data-end="3396">DONE</strong> (Ya resuelto)
+      </h1>
+      <h2 data-start="3412" data-end="3451">
+        <strong data-start="3415" data-end="3451"
+          >✔ Debounce controlado con lookup</strong
+        >
+      </h2>
+      <p data-start="3452" data-end="3473">Cada autocomplete ya:</p>
+      <ul data-start="3475" data-end="3568">
+        <li data-start="3475" data-end="3497">
+          <p data-start="3477" data-end="3497">busca con debounce</p>
+        </li>
+        <li data-start="3498" data-end="3534">
+          <p data-start="3500" data-end="3534">
+            recupera full data con fetchById
+          </p>
+        </li>
+        <li data-start="3535" data-end="3568">
+          <p data-start="3537" data-end="3568">
+            evita loops con
+            <code data-start="3553" data-end="3566">isSelecting</code>
+          </p>
+        </li>
+      </ul>
+      <hr data-start="3570" data-end="3573" />
+      <h2 data-start="3575" data-end="3620">
+        <strong data-start="3578" data-end="3620"
+          >✔ dropdown NO se abre en carga inicial</strong
+        >
+      </h2>
+      <p data-start="3621" data-end="3660">
+        Esto se resolvió con
+        <code data-start="3642" data-end="3659">loadedInitially</code>.
+      </p>
+      <hr data-start="3662" data-end="3665" />
+      <h2 data-start="3667" data-end="3702">
+        <strong data-start="3670" data-end="3702"
+          >✔ Normalización centralizada</strong
+        >
+      </h2>
+      <p data-start="3703" data-end="3773">
+        Actualmente con
+        <code data-start="3719" data-end="3734">normalizarX()</code> estás
+        evitando estados inconsistentes.
+      </p>
+      <hr data-start="3775" data-end="3778" />
+      <h1 data-start="3780" data-end="3823">
+        🚀 ¿Quieres que prepare el primer paso?
+      </h1>
+      <p data-start="3824" data-end="3838">Puedo generar:</p>
+      <p data-start="3840" data-end="4034">
+        ✔
+        <strong data-start="3842" data-end="3891"
+          ><code data-start="3844" data-end="3868">useAutocompleteBase.js</code>
+          completo y funcional</strong
+        ><br data-start="3891" data-end="3894" />
+        ✔
+        <strong data-start="3896" data-end="3956"
+          >El componente
+          <code data-start="3912" data-end="3934"
+            >&lt;AutocompleteBase /&gt;</code
+          >
+          listísimo para usar</strong
+        ><br data-start="3956" data-end="3959" />
+        ✔
+        <strong data-start="3961" data-end="4034"
+          >Refactor directo de Cliente, Equipo y Técnico para usar el mismo
+          hook</strong
+        >
+      </p>
+      <p
+        data-start="4036"
+        data-end="4119"
+        data-is-last-node=""
+        data-is-only-node=""
+      >
+        Dime si quieres que avance con el
+        <strong data-start="4070" data-end="4083">Hook Base</strong> o con el
+        <strong data-start="4093" data-end="4110">Componente UI</strong>
+        primero.
+      </p>
+    </div>
+  </div>
+</div>

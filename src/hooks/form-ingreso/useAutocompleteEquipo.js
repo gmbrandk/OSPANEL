@@ -14,9 +14,6 @@ const EMPTY_EQUIPO = normalizarEquipo({
   almacenamiento: '',
 });
 
-/**
- * 🚀 Hook con normalización segura y sin loops infinitos
- */
 export function useAutocompleteEquipo(initialData = null, minLength = 3) {
   const { equipos, buscarEquipos, buscarEquipoPorId } = useEquipos();
 
@@ -24,55 +21,61 @@ export function useAutocompleteEquipo(initialData = null, minLength = 3) {
   const [selectedEquipo, setSelectedEquipo] = useState(
     initialData ? normalizarEquipo(initialData) : EMPTY_EQUIPO
   );
-
   const [isOpen, setIsOpen] = useState(false);
-  const isSelecting = useRef(false);
 
-  // ============================================================
-  // 🟦 Sync external initialData → internal state (safe)
-  // ============================================================
+  const isSelecting = useRef(false);
+  const loadedInitially = useRef(true);
+
+  // ===================================================================================
+  // Sync initialData (NO abrir dropdown al cargar)
+  // ===================================================================================
   useEffect(() => {
     if (!initialData) {
       setSelectedEquipo(EMPTY_EQUIPO);
       setQuery('');
+      setIsOpen(false);
+      loadedInitially.current = false;
       return;
     }
 
     const normalized = normalizarEquipo(initialData);
 
-    // Evitar updates innecesarios (previene loops)
     setSelectedEquipo((prev) => {
       const same = JSON.stringify(prev) === JSON.stringify(normalized);
       return same ? prev : normalized;
     });
 
     setQuery(initialData.nroSerie || '');
+    setIsOpen(false);
+    loadedInitially.current = true; // ⛔ evita que el debounce abra la lista
   }, [initialData]);
 
-  // ============================================================
-  // 🔍 Debounced autocomplete search
-  // ============================================================
+  // ===================================================================================
+  // Debounced autocomplete
+  // ===================================================================================
   useEffect(() => {
     if (isSelecting.current) return;
 
-    if (!query || query.trim().length < minLength) {
-      // NO setSelectedEquipo aquí → produce loops si está llenado manual
-      return;
-    }
+    if (!query || query.trim().length < minLength) return;
 
     const timeout = setTimeout(() => {
       buscarEquipos(query);
-      setIsOpen(true);
+
+      // ❗ SOLO abrir si el usuario escribió
+      if (!loadedInitially.current) {
+        setIsOpen(true);
+      }
     }, 350);
 
     return () => clearTimeout(timeout);
   }, [query, buscarEquipos, minLength]);
 
-  // ============================================================
-  // 🎯 Select an equipo and fetch full data (lookup)
-  // ============================================================
+  // ===================================================================================
+  // Select equipo (lookup completo)
+  // ===================================================================================
   const seleccionarEquipo = async (equipoParcial) => {
     isSelecting.current = true;
+    loadedInitially.current = false;
 
     setQuery(equipoParcial.nroSerie || '');
     setIsOpen(false);
@@ -90,15 +93,19 @@ export function useAutocompleteEquipo(initialData = null, minLength = 3) {
     }, 100);
   };
 
-  // ============================================================
-  // 🧩 UI Handlers
-  // ============================================================
+  // ===================================================================================
+  // UI Handlers
+  // ===================================================================================
   const onQueryChange = (value) => {
+    loadedInitially.current = false;
     setQuery(value);
     setIsOpen(true);
   };
 
-  const abrirResultados = () => setIsOpen(true);
+  const abrirResultados = () => {
+    loadedInitially.current = false;
+    setIsOpen(true);
+  };
 
   const cerrarResultados = () => {
     setTimeout(() => setIsOpen(false), 150);
@@ -106,7 +113,7 @@ export function useAutocompleteEquipo(initialData = null, minLength = 3) {
 
   return {
     query,
-    resultados: equipos, // resultado real de la API
+    resultados: equipos,
     selectedEquipo,
     seleccionarEquipo,
     isOpen,

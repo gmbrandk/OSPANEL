@@ -11,6 +11,8 @@ export function useAutocompleteTipoTrabajo(initialValue = null) {
   const [selectedTrabajo, setSelectedTrabajo] = useState(null);
   const [forceShowAll, setForceShowAll] = useState(false);
 
+  const [isInitialSelection, setIsInitialSelection] = useState(false);
+
   const initializedRef = useRef(false);
 
   // ======================
@@ -27,6 +29,7 @@ export function useAutocompleteTipoTrabajo(initialValue = null) {
 
     if (typeof initialValue === 'object' && initialValue.nombre) {
       setSelectedTrabajo(initialValue);
+      setIsInitialSelection(true); // <-- importante
       setQuery(initialValue.nombre);
       return;
     }
@@ -105,6 +108,7 @@ export function useAutocompleteTipoTrabajo(initialValue = null) {
   const seleccionarTrabajo = (trabajo) => {
     setSelectedTrabajo(trabajo);
     setQuery(trabajo.nombre);
+    setIsInitialSelection(false); // <-- selección manual
     cerrarResultados();
   };
 
@@ -117,5 +121,6 @@ export function useAutocompleteTipoTrabajo(initialValue = null) {
     abrirResultados,
     cerrarResultados,
     seleccionarTrabajo,
+    isInitialSelection, // <-- NEW
   };
 }

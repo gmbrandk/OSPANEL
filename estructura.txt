@@ -1,5 +1,9 @@
+├── .git
+│   └── ... (contenido omitido)
 ├── .gitignore
+├── KANBANAutocomplete.html
 ├── README.md
+├── ToDoNextContext.html
 ├── eslint.config.js
 ├── estructura.txt
 ├── file_tree.py
@@ -8,6 +12,21 @@
 │   └── ... (contenido omitido)
 ├── package-lock.json
 ├── package.json
+├── paqueteARevisar
+│   ├── components
+│   │   └── form-ingreso
+│   │       ├── AutocompleteBase.jsx
+│   │       ├── LineaServicio.jsx
+│   │       ├── OrdenServicio.jsx
+│   │       └── SelectAutocomplete.jsx
+│   ├── context
+│   │   ├── FormIngresoContext.jsx
+│   │   └── FormIngresoContextInicial.jsx
+│   ├── hook
+│   │   └── useAutocompleteTecnico.js
+│   └── utils
+│       ├── normalizarTecnico.js
+│       └── totales.js
 ├── public
 │   └── vite.svg
 ├── setup-form-ingreso.ps1
@@ -15,19 +34,30 @@
 │   ├── App.css
 │   ├── App.jsx
 │   ├── __mock__
-│   │   └── form-ingreso
-│   │       ├── clientes.js
-│   │       ├── equipos.js
-│   │       ├── index.js
-│   │       ├── tecnicos.js
-│   │       └── tipos-trabajo.js
+│   │   ├── form-ingreso
+│   │   │   ├── clientes.js
+│   │   │   ├── equipos.js
+│   │   │   ├── index.js
+│   │   │   ├── tecnicos.js
+│   │   │   └── tipos-trabajo.js
+│   │   └── ordenServicioMocks.js
 │   ├── assets
 │   │   ├── form-ingreso
-│   │   │   └── dropdown-arrow.svg
+│   │   │   ├── close-circle.svg
+│   │   │   ├── close-x.svg
+│   │   │   ├── close.png
+│   │   │   ├── close.svg
+│   │   │   ├── dropdown-arrow.svg
+│   │   │   ├── search.svg
+│   │   │   └── search.webp
 │   │   └── react.svg
+│   ├── clienteServiceInit.js
 │   ├── components
+│   │   ├── DevLogPanel.jsx
+│   │   ├── PersistenSwitch.jsx
 │   │   └── form-ingreso
 │   │       ├── Autocomplete.jsx
+│   │       ├── AutocompleteBase.jsx
 │   │       ├── ClienteSection.jsx
 │   │       ├── Collapsible.jsx
 │   │       ├── EquipoSection.jsx
@@ -35,30 +65,85 @@
 │   │       ├── FormIngreso.jsx
 │   │       ├── LineaServicio.jsx
 │   │       ├── OrdenServicioSection.jsx
+│   │       ├── SelectAutocomplete.jsx
 │   │       ├── TecnicoSection.jsx
 │   │       └── index.js
+│   ├── config
+│   │   ├── entorno.js
+│   │   └── proveedores.js
+│   ├── context
+│   │   ├── CollapsibleGroupContext.jsx
+│   │   ├── IngresoFormContext.jsx
+│   │   ├── clientesContext.jsx
+│   │   ├── equiposContext.jsx
+│   │   ├── tecnicosContext.jsx
+│   │   └── tiposTrabajoContext.jsx
+│   ├── data
+│   │   └── exampleInitialData.js
 │   ├── docs
 │   │   └── form-ingreso.md
+│   ├── equipoServiceInit.js
 │   ├── hooks
-│   │   └── form-ingreso
-│   │       ├── useAutocompleteCliente.js
-│   │       ├── useAutocompleteEquipo.js
-│   │       ├── useAutocompleteTecnico.js
-│   │       ├── useAutocompleteTipoTrabajo.js
-│   │       ├── useCollapsible.js
-│   │       ├── useLineasServicio.js
-│   │       └── useSummary.js
+│   │   ├── form-ingreso
+│   │   │   ├── useAutocompleteCliente.js
+│   │   │   ├── useAutocompleteEquipo.js
+│   │   │   ├── useAutocompleteTecnico.js
+│   │   │   ├── useAutocompleteTipoTrabajo.js
+│   │   │   ├── useCollapsible.js
+│   │   │   ├── useLineasServicio.js
+│   │   │   ├── useLookupUniversal.js
+│   │   │   └── useSummary.js
+│   │   ├── useAutosave.js
+│   │   ├── useIsFirstRender.js
+│   │   └── useResolverObjectId.js
 │   ├── index.css
 │   ├── main.jsx
-│   └── styles
-│       └── form-ingreso
-│           ├── autocomplete.css
-│           ├── base.css
-│           ├── buttons.css
-│           ├── fieldset.css
-│           ├── index.css
-│           ├── inputs.css
-│           ├── layout.css
-│           ├── linea-servicio.css
-│           └── telefono.css
+│   ├── pages
+│   │   └── IngresoPage.jsx
+│   ├── service
+│   │   ├── clientes
+│   │   │   ├── clienteService.js
+│   │   │   └── providers
+│   │   │       ├── apiProvider.js
+│   │   │       └── localStorageProvider.js
+│   │   ├── equipos
+│   │   │   ├── equipoService.js
+│   │   │   └── providers
+│   │   │       ├── apiProvider.js
+│   │   │       └── localStorageProvider.js
+│   │   ├── tecnicos
+│   │   │   ├── providers
+│   │   │   │   ├── apiProvider.js
+│   │   │   │   └── localStorageProvider.js
+│   │   │   └── tecnicoService.js
+│   │   └── tiposTrabajo
+│   │       ├── providers
+│   │       │   ├── apiProvider.js
+│   │       │   └── localStorageProvider.js
+│   │       └── tiposTrabajoService.js
+│   ├── styles
+│   │   └── form-ingreso
+│   │       ├── autocomplete.css
+│   │       ├── base.css
+│   │       ├── buttons.css
+│   │       ├── fieldset.css
+│   │       ├── index.css
+│   │       ├── inputs.css
+│   │       ├── layout.css
+│   │       ├── linea-servicio.css
+│   │       └── telefono.css
+│   ├── tecnicoServiceInit.js
+│   ├── tipoTrabajoServiceInit.js
+│   └── utils
+│       ├── LogBuffer.js
+│       ├── autoSave.js
+│       ├── buildOrdenPayload.js
+│       ├── deepEqual.js
+│       ├── diffLineaServicio.js
+│       ├── ensureAuth.js
+│       ├── log.js
+│       ├── normalizarEquipo.js
+│       ├── normalizarTecnico.js
+│       └── normalizeOrdenPayload.js
+├── todoNextPopulateForm.html
 └── vite.config.js

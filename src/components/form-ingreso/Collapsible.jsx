@@ -1,3 +1,4 @@
+// components/Collapsible.jsx
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import dropdownArrow from '../../assets/form-ingreso/dropdown-arrow.svg';
 import { useCollapsibleGroup } from '../../context/CollapsibleGroupContext';
@@ -10,9 +11,12 @@ export default function Collapsible({
   main = false,
   initMode = 'auto',
   index = 0,
+  mode: forcedMode = null,
 }) {
   const group = useCollapsibleGroup();
-  const isControlledByGroup = Boolean(group);
+
+  // 🔥 FIX 1: solo los MAIN están controlados por el grupo
+  const isControlledByGroup = main;
 
   const shouldStartOpen = (() => {
     switch (initMode) {
@@ -28,26 +32,42 @@ export default function Collapsible({
     }
   })();
 
-  const { isOpen, toggle, contentRef, setOpen, openedByUser } = useCollapsible({
-    defaultOpen: shouldStartOpen,
-    title,
+  const { isOpen, toggle, contentRef, setOpen, openedByUser, isAnimating } =
+    useCollapsible({
+      defaultOpen: shouldStartOpen,
+      title,
+    });
+
+  const idRef = useRef(
+    () =>
+      `${title.replace(/\s+/g, '-').toLowerCase()}-${index}-${Math.random()
+        .toString(36)
+        .slice(2, 9)}`
+  );
+  if (typeof idRef.current === 'function') idRef.current = idRef.current();
+
+  const mode =
+    forcedMode ||
+    (() => {
+      const t = (title || '').toLowerCase();
+      if (t.includes('cliente')) return 'cliente';
+      if (t.includes('equipo')) return 'equipo';
+      if (t.includes('orden')) return 'orden';
+      if (t.includes('ficha')) return 'ficha';
+      return 'auto';
+    })();
+
+  const summary = useSummary({
+    containerRef: contentRef,
+    mode,
   });
 
-  const summary = useSummary(contentRef);
   const didMount = useRef(false);
 
-  /* ======================================================
-     🧩 Registro en el grupo (deferido correctamente)
-  ====================================================== */
   useLayoutEffect(() => {
     if (!isControlledByGroup) return;
 
-    // console.log(
-    //   `%c[COLLAPSIBLE] 🧩 Registrando "${title}" (index: ${index})`,
-    //   'color: #0ff'
-    // );
-
-    group.registerCollapsible(title, index, {
+    group.registerCollapsible(idRef.current, index, {
       setOpen,
       openedByUser,
       main,
@@ -57,77 +77,59 @@ export default function Collapsible({
 
   useEffect(() => {
     const shouldBeOpen = shouldStartOpen;
-
-    // console.log(
-    //   `%c[COLLAPSIBLE] 🔄 initMode change detected`,
-    //   'color:#0ff;font-weight:bold',
-    //   {
-    //     initMode,
-    //     shouldStartOpen,
-    //     previousOpen: isOpen,
-    //     nextOpen: shouldBeOpen,
-    //   }
-    // );
-
-    if (shouldBeOpen !== isOpen) {
-      // console.log(
-      //   `%c[COLLAPSIBLE] 🟢 syncing state → setOpen(${shouldBeOpen})`,
-      //   'color:#7f7'
-      // );
-      setOpen(shouldBeOpen);
-    } else {
-      // console.log(
-      //   `%c[COLLAPSIBLE] ⚪ no sync needed (already correct)`,
-      //   'color:#aaa'
-      // );
-    }
+    if (shouldBeOpen !== isOpen) setOpen(shouldBeOpen);
   }, [initMode]);
 
-  /* ======================================================
-     🔄 Notificar al grupo cuando se abre manualmente
-  ====================================================== */
   useEffect(() => {
     if (!didMount.current) {
       didMount.current = true;
       return;
     }
 
-    if (main && isControlledByGroup && isOpen && openedByUser.current) {
-      // console.log(
-      //   `[COLLAPSIBLE] 🔵 "${title}" abierto manualmente, notificando al grupo`
-      // );
-      group.registerOpen(title, index);
+    // 🔥 FIX 2: solo notificar si es realmente MAIN
+    if (isControlledByGroup && isOpen && openedByUser.current) {
+      group.registerOpen(idRef.current, index);
     }
-  }, [isOpen, main, isControlledByGroup, group, title, index]);
+  }, [isOpen, isControlledByGroup, group, index]);
 
   const handleFocusIn = () => {
     if (!main) return;
-    if (!isOpen) {
-      // console.log(
-      //   `%c[COLLAPSIBLE] 🟢 Focus en "${title}" → auto expand`,
-      //   'color: #7f7'
-      // );
-      setOpen(true);
-    }
-    if (isControlledByGroup) group.registerOpen(title, index);
+    if (!isOpen) setOpen(true);
+    if (isControlledByGroup) group.registerOpen(idRef.current, index);
   };
 
+  let lastToggle = useRef(0);
+
   const handleClick = () => {
-    // console.log(`%c[COLLAPSIBLE] ⚪️ Click en "${title}"`, 'color: #ccc');
+    const now = Date.now();
+    if (now - lastToggle.current < 350) return; // misma duración que la animación
+    lastToggle.current = now;
+
+    if (isAnimating()) return;
     toggle();
   };
 
   return (
     <fieldset
-      className={`collapsible ${!isOpen ? 'collapsed' : 'expanded'}`}
+      className={`collapsible ${!isOpen ? 'collapsed' : 'expanded'} ${
+        isAnimating() ? 'is-animating' : ''
+      }`}
       data-main={main}
       onFocusCapture={handleFocusIn}
       style={{ marginTop: '15px' }}
     >
       <div className="fieldset-header" onClick={handleClick}>
         <h2>{title}</h2>
-        <span className="legend-summary">{!isOpen ? summary : ''}</span>
-        <img src={dropdownArrow} className="arrow-icon" alt="" />
+
+        <span className="legend-summary" style={{ opacity: isOpen ? 0 : 1 }}>
+          {summary}
+        </span>
+
+        <img
+          src={dropdownArrow}
+          className={`arrow-icon ${isAnimating() ? 'animating' : ''}`}
+          alt=""
+        />
       </div>
 
       <div className="fieldset-content" ref={contentRef}>

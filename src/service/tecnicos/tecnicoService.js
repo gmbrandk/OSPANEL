@@ -22,7 +22,19 @@ export const getTecnicosService = () => {
   return {
     // 🔥 API consistente con el Context
     buscarTecnicos: (query) => _provider.buscarTecnico(query),
-    buscarTecnicoPorId: (id) => _provider.buscarTecnicoPorId(id),
+    buscarTecnicoPorId: (id) => {
+      const realId = typeof id === 'string' ? id : id?._id;
+
+      if (!realId) {
+        console.error(
+          '[tecnicosService] ❌ buscarTecnicoPorId recibió un ID inválido:',
+          id
+        );
+        return null;
+      }
+
+      return _provider.buscarTecnicoPorId(realId);
+    },
 
     // Info del proveedor
     obtenerNombreProveedor: () => _proveedorNombre,
