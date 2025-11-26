@@ -1,7 +1,7 @@
 // context/TiposTrabajoContext.jsx
 import { createContext, useContext, useEffect, useState } from 'react';
-import { getTiposTrabajoService } from '../service/tiposTrabajo/tiposTrabajoService';
-import { log } from '../utils/log';
+import { getTiposTrabajoService } from '../../service/form-ingreso/tiposTrabajo/tiposTrabajoService';
+import { log } from '../../utils/log';
 
 const TiposTrabajoContext = createContext(null);
 

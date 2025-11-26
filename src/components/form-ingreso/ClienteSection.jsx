@@ -1,6 +1,6 @@
 // src/components/form-ingreso/ClienteSection.jsx
 import { useEffect } from 'react';
-import { useIngresoForm } from '../../context/IngresoFormContext.jsx';
+import { useIngresoForm } from '../../context/form-ingreso/IngresoFormContext.jsx';
 import { useAutocompleteCliente } from '../../hooks/form-ingreso/useAutocompleteCliente.js';
 import { Autocomplete } from './Autocomplete.jsx';
 

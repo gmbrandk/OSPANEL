@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { useTiposTrabajo } from '../../context/tiposTrabajoContext';
+import { useTiposTrabajo } from '../../context/form-ingreso/tiposTrabajoContext';
 import { log } from '../../utils/log';
 
 export function useAutocompleteTipoTrabajo(initialValue = null) {

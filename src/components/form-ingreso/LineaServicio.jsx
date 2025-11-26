@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useIngresoForm } from '../../context/IngresoFormContext';
+import { useIngresoForm } from '../../context/form-ingreso/IngresoFormContext';
 import { useAutocompleteTipoTrabajo } from '../../hooks/form-ingreso/useAutocompleteTipoTrabajo';
 import { log } from '../../utils/log'; // ← logger
 import { SelectAutocomplete } from './SelectAutocomplete.jsx';

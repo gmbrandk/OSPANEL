@@ -1,7 +1,7 @@
 // context/TecnicosContext.jsx
 import { createContext, useCallback, useContext, useState } from 'react';
-import { getTecnicosService } from '../service/tecnicos/tecnicoService';
-import { normalizarTecnico } from '../utils/normalizarTecnico';
+import { getTecnicosService } from '../../service/form-ingreso/tecnicos/tecnicoService';
+import { normalizarTecnico } from '../../utils/normalizarTecnico';
 
 const TecnicosContext = createContext(null);
 

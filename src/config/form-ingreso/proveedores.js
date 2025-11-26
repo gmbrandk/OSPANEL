@@ -1,16 +1,16 @@
 // config/proveedores.js (agregar)
-import { apiProvider as tiposTrabajoApiProvider } from '../service/tiposTrabajo/providers/apiProvider';
-import { localStorageProvider as tiposTrabajoLocalProvider } from '../service/tiposTrabajo/providers/localStorageProvider';
+import { apiProvider as tiposTrabajoApiProvider } from '../../service/form-ingreso/tiposTrabajo/providers/apiProvider';
+import { localStorageProvider as tiposTrabajoLocalProvider } from '../../service/form-ingreso/tiposTrabajo/providers/localStorageProvider';
 
-import { apiProvider as clientesApiProvider } from '../service/clientes/providers/apiProvider';
-import { localStorageProvider as clientesLocalProvider } from '../service/clientes/providers/localStorageProvider';
+import { apiProvider as clientesApiProvider } from '../../service/form-ingreso/clientes/providers/apiProvider';
+import { localStorageProvider as clientesLocalProvider } from '../../service/form-ingreso/clientes/providers/localStorageProvider';
 
-import { apiProvider as equiposApiProvider } from '../service/equipos/providers/apiProvider';
-import { localStorageProvider as equiposLocalProvider } from '../service/equipos/providers/localStorageProvider';
+import { apiProvider as equiposApiProvider } from '../../service/form-ingreso/equipos/providers/apiProvider';
+import { localStorageProvider as equiposLocalProvider } from '../../service/form-ingreso/equipos/providers/localStorageProvider';
 
 // Tecnicos providers
-import { apiProvider as tecnicosApiProvider } from '../service/tecnicos/providers/apiProvider';
-import { localStorageProvider as tecnicosLocalProvider } from '../service/tecnicos/providers/localStorageProvider';
+import { apiProvider as tecnicosApiProvider } from '../../service/form-ingreso/tecnicos/providers/apiProvider';
+import { localStorageProvider as tecnicosLocalProvider } from '../../service/form-ingreso/tecnicos/providers/localStorageProvider';
 
 export const mapaProveedoresTiposTrabajo = {
   local: {

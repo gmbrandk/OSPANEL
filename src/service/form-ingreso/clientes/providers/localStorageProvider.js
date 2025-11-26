@@ -1,5 +1,5 @@
 // services/clientes/providers/localStorageProvider.js
-import { clientesMock } from '../../../__mock__/form-ingreso/clientes';
+import { clientesMock } from '../../../../__mock__/form-ingreso/clientes';
 
 const maskString = (str, visible = 3) => {
   if (!str) return '';

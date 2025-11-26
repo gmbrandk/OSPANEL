@@ -1,6 +1,6 @@
 // hooks/form-ingreso/useSummary.js
 import { useCallback, useEffect, useState } from 'react';
-import { useIngresoForm } from '../../context/IngresoFormContext';
+import { useIngresoForm } from '../../context/form-ingreso/IngresoFormContext';
 
 /**
  * useSummary({ containerRef, mode })

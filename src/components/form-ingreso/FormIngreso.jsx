@@ -1,13 +1,13 @@
-import { CollapsibleGroupProvider } from '../../context/CollapsibleGroupContext';
+import { CollapsibleGroupProvider } from '../../context/form-ingreso/CollapsibleGroupContext';
 import {
   IngresoFormProvider,
   useIngresoForm,
-} from '../../context/IngresoFormContext';
+} from '../../context/form-ingreso/IngresoFormContext';
 
-import { ClientesProvider } from '../../context/clientesContext.jsx';
-import { EquiposProvider } from '../../context/equiposContext.jsx'; // 👈 AÑADIDO
-import { TecnicosProvider } from '../../context/tecnicosContext.jsx';
-import { TiposTrabajoProvider } from '../../context/tiposTrabajoContext.jsx';
+import { ClientesProvider } from '../../context/form-ingreso/clientesContext.jsx';
+import { EquiposProvider } from '../../context/form-ingreso/equiposContext.jsx'; // 👈 AÑADIDO
+import { TecnicosProvider } from '../../context/form-ingreso/tecnicosContext.jsx';
+import { TiposTrabajoProvider } from '../../context/form-ingreso/tiposTrabajoContext.jsx';
 
 import { PersistSwitch } from '../PersistenSwitch.jsx';
 import { ClienteSection } from './ClienteSection.jsx';

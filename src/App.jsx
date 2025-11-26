@@ -6,10 +6,10 @@ import { buildOrdenPayload } from './utils/buildOrdenPayload';
 import { ensureAuth } from './utils/ensureAuth';
 import { normalizeOrdenPayload } from './utils/normalizeOrdenPayload';
 
-import './clienteServiceInit';
-import './equipoServiceInit';
-import './tecnicoServiceInit';
-import './tipoTrabajoServiceInit';
+import './config/form-ingreso/init/clienteServiceInit';
+import './config/form-ingreso/init/equipoServiceInit';
+import './config/form-ingreso/init/tecnicoServiceInit';
+import './config/form-ingreso/init/tipoTrabajoServiceInit';
 
 function App() {
   const [loading, setLoading] = useState(true);

@@ -1,6 +1,6 @@
 // src/hooks/form-ingreso/useAutocompleteEquipo.js
 import { useEffect, useRef, useState } from 'react';
-import { useEquipos } from '../../context/equiposContext';
+import { useEquipos } from '../../context/form-ingreso/equiposContext';
 import { normalizarEquipo } from '../../utils/normalizarEquipo';
 
 const EMPTY_EQUIPO = normalizarEquipo({

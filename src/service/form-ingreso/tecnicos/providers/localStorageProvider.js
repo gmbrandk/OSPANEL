@@ -1,5 +1,5 @@
 // services/tecnicos/providers/localStorageProviderTecnicos.js
-import { tecnicosMock } from '../../../__mock__/form-ingreso/tecnicos';
+import { tecnicosMock } from '../../../../__mock__/form-ingreso/tecnicos';
 
 export const localStorageProvider = {
   // ======================================================

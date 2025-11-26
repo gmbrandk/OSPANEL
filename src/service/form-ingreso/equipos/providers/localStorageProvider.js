@@ -1,5 +1,5 @@
 // services/equipos/providers/localStorageProviderEquipos.js
-import { equiposMock } from '../../../__mock__/form-ingreso/equipos';
+import { equiposMock } from '../../../../__mock__/form-ingreso/equipos';
 
 // Enmascarar nroSerie como el backend
 const maskStringEnding = (str, visibleEnd = 4) => {

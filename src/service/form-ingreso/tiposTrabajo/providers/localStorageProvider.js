@@ -1,5 +1,5 @@
 // services/tiposTrabajo/providers/localStorageProvider.js
-import { tiposTrabajoMock } from '../../../__mock__/form-ingreso/tipos-trabajo';
+import { tiposTrabajoMock } from '../../../../__mock__/form-ingreso/tipos-trabajo';
 
 export const localStorageProvider = {
   listarTiposTrabajo: async () => {

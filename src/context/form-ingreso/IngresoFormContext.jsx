@@ -7,14 +7,14 @@ import {
   useState,
 } from 'react';
 
-import { useAutosave } from '../hooks/useAutosave';
-import { log } from '../utils/log';
+import { useAutosave } from '../../hooks/useAutosave';
+import { log } from '../../utils/log';
 
 // 🔥 IMPORTAR LOS CONTEXT NECESARIOS
-import { useClientes } from '../context/clientesContext';
-import { useEquipos } from '../context/equiposContext';
-import { useTecnicos } from '../context/tecnicosContext';
-import { useTiposTrabajo } from '../context/tiposTrabajoContext';
+import { useClientes } from './clientesContext';
+import { useEquipos } from './equiposContext';
+import { useTecnicos } from './tecnicosContext';
+import { useTiposTrabajo } from './tiposTrabajoContext';
 
 const LS_KEY = 'formIngresoAutosave_v3';
 const LS_PERSIST = 'formPersistEnabled_v1';
