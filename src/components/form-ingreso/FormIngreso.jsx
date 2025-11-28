@@ -8,6 +8,7 @@ import { ClientesProvider } from '../../context/form-ingreso/clientesContext.jsx
 import { EquiposProvider } from '../../context/form-ingreso/equiposContext.jsx'; // 👈 AÑADIDO
 import { TecnicosProvider } from '../../context/form-ingreso/tecnicosContext.jsx';
 import { TiposTrabajoProvider } from '../../context/form-ingreso/tiposTrabajoContext.jsx';
+import { ROLES_PERMITIDOS_EDITAR_TECNICO } from '../../utils/roles.js';
 
 import { PersistSwitch } from '../PersistenSwitch.jsx';
 import { ClienteSection } from './ClienteSection.jsx';
@@ -15,13 +16,23 @@ import Collapsible from './Collapsible.jsx';
 import { EquipoSection } from './EquipoSection.jsx';
 import { OrdenServicio } from './OrdenServicioSection.jsx';
 
-function IngresoFormContent({ onSubmit }) {
-  const { cliente, equipo, tecnico, orden, submitAndClear } = useIngresoForm();
+function IngresoFormContent({ onSubmit, role }) {
+  const { cliente, equipo, tecnico, orden, originalRef, submitAndClear } =
+    useIngresoForm();
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const payload = { cliente, equipo, tecnico, orden };
+    const canEditTecnico = ROLES_PERMITIDOS_EDITAR_TECNICO.includes(role);
+
+    const originalTecnico = originalRef.current?.tecnico ?? null;
+
+    const payload = {
+      cliente,
+      equipo,
+      tecnico: canEditTecnico ? tecnico : originalTecnico, // 🔒 protección fuerte
+      orden,
+    };
 
     if (onSubmit) onSubmit(payload);
 
@@ -59,7 +70,7 @@ function IngresoFormContent({ onSubmit }) {
           index={2}
           initMode="expanded"
         >
-          <OrdenServicio />
+          <OrdenServicio role={role} />
         </Collapsible>
       </CollapsibleGroupProvider>
 
@@ -75,19 +86,14 @@ function IngresoFormContent({ onSubmit }) {
 // =================================================================
 // 🧠 Componente principal — inicializa TODOS los providers
 // =================================================================
-export default function FormIngreso({ initialPayload = null, onSubmit }) {
+export default function FormIngreso({ initialPayload = null, onSubmit, role }) {
   return (
     <ClientesProvider>
-      {/* 1. Clientes */}
       <EquiposProvider>
-        {/* 2. Equipos */}
         <TecnicosProvider>
-          {/* 3. Técnicos */}
           <TiposTrabajoProvider>
-            {/* 4. Tipos trabajo */}
             <IngresoFormProvider initialPayload={initialPayload}>
-              {/* 5. El formulario ya tiene acceso a todo */}
-              <IngresoFormContent onSubmit={onSubmit} />
+              <IngresoFormContent onSubmit={onSubmit} role={role} />
             </IngresoFormProvider>
           </TiposTrabajoProvider>
         </TecnicosProvider>

@@ -13,10 +13,12 @@ export function Autocomplete({
   abrirResultados = () => {},
   renderItem = (item) => item.label ?? item.nombre ?? '',
   inputName = 'autocomplete',
+  disabled = false, // 👈 NUEVO
 }) {
-  const handleFocus = () => abrirResultados();
+  const handleFocus = () => !disabled && abrirResultados();
 
   const handleToggle = () => {
+    if (disabled) return;
     if (isOpen) cerrarResultados();
     else abrirResultados();
   };
@@ -35,7 +37,8 @@ export function Autocomplete({
       inputName={inputName}
       onFocus={handleFocus}
       onToggle={handleToggle}
-      renderIcon={() => <img src={searchIcon} alt="search" />} // 👈 Aquí está la lupa
+      renderIcon={() => <img src={searchIcon} alt="search" />}
+      disabled={disabled} // 👈 PASAMOS
     />
   );
 }

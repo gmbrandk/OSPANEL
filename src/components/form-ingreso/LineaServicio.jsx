@@ -1,25 +1,43 @@
+// ============================================================
+// LineaServicio – versión con badges por campo y manejo isNew
+// ============================================================
+
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useIngresoForm } from '../../context/form-ingreso/IngresoFormContext';
 import { useAutocompleteTipoTrabajo } from '../../hooks/form-ingreso/useAutocompleteTipoTrabajo';
-import { log } from '../../utils/log'; // ← logger
 import { SelectAutocomplete } from './SelectAutocomplete.jsx';
 
 export function LineaServicio({ index, data = {}, onDelete, onChange }) {
-  const { updateLinea, deleteLinea, resetLinea, isLineaModificada } =
-    useIngresoForm();
+  const {
+    updateLinea,
+    deleteLinea,
+    resetLinea,
+    originalRef,
+    resolveEstado,
+    explainDiff,
+  } = useIngresoForm();
 
-  const modificado = isLineaModificada(index);
+  const originalLinea = originalRef.current?.orden?.lineas?.[data.uid] ?? null;
+  const estado = resolveEstado(data, originalLinea);
+  const diff = explainDiff(data, originalLinea);
 
-  // Normalización del tipoTrabajo
+  const isLineaNueva = data.isNew;
+
+  function isPrecioModificado(lineaActual, lineaOriginal) {
+    if (!lineaOriginal) return false;
+    const a = Number(lineaActual?.precioUnitario);
+    const b = Number(lineaOriginal?.precioUnitario);
+    return !Number.isNaN(a) && !Number.isNaN(b) && a !== b;
+  }
+
   const initialTrabajo = useMemo(() => {
-    log('UI:LINEA', 'Normalizando tipoTrabajo inicial', { index, data });
-    if (typeof data.tipoTrabajo === 'object') return data.tipoTrabajo;
-    if (typeof data.tipoTrabajo === 'string')
-      return { nombre: data.tipoTrabajo };
-    return null;
+    const tt = data.tipoTrabajo;
+    if (!tt) return '';
+    if (typeof tt === 'object') return tt;
+    if (typeof tt === 'string') return { _id: tt };
+    return '';
   }, [data.tipoTrabajo]);
 
-  // Autocomplete para tipo de trabajo
   const {
     query,
     resultados,
@@ -36,200 +54,197 @@ export function LineaServicio({ index, data = {}, onDelete, onChange }) {
     data.descripcion ?? ''
   );
   const [userEditedDescripcion, setUserEditedDescripcion] = useState(false);
-
   const precioOriginalRef = useRef(null);
 
-  // Sincronizar descripción externa → local
+  const precioActual = data.precioUnitario ?? '';
+  const precioOriginal = precioOriginalRef.current;
+  const precioModificado = isPrecioModificado(data, originalLinea);
+
+  // ------------------------------------------
+  // Sincronización descripción
+  // ------------------------------------------
   useEffect(() => {
-    if (
-      data.descripcion !== undefined &&
-      data.descripcion !== localDescripcion
-    ) {
-      log('UI:DESCRIPCION', 'Sincronizando descripción externa', {
-        index,
-        externa: data.descripcion,
-        local: localDescripcion,
-      });
+    if (!userEditedDescripcion && data.descripcion !== localDescripcion) {
       setLocalDescripcion(data.descripcion ?? '');
     }
   }, [data.descripcion]);
 
-  // Cuando el usuario selecciona un tipo de trabajo
-  // Cuando se selecciona un tipo de trabajo
+  // ------------------------------------------
+  // Inicialización precio original
+  // ------------------------------------------
+  useEffect(() => {
+    const n = Number(data.precioUnitario);
+    if (data._fromReset || precioOriginalRef.current == null) {
+      precioOriginalRef.current = Number.isNaN(n) ? null : n;
+    }
+  }, [data.precioUnitario, data._fromReset]);
+
+  // ------------------------------------------
+  // Sincronización tipoTrabajo externo → local query
+  // ------------------------------------------
+  useEffect(() => {
+    const tt = data.tipoTrabajo;
+    if (!tt) return;
+    if (typeof tt === 'string') {
+      if (tt !== query) onQueryChange(tt);
+      return;
+    }
+    if (typeof tt === 'object') {
+      if (!selectedTrabajo || selectedTrabajo._id !== tt._id) {
+        onQueryChange(tt.nombre ?? '');
+      }
+    }
+  }, [data.tipoTrabajo]);
+
+  // ------------------------------------------
+  // Cuando seleccionamos tipoTrabajo
+  // ------------------------------------------
   useEffect(() => {
     if (!selectedTrabajo) return;
 
-    log('UI:TRABAJO', 'Tipo trabajo seleccionado', {
-      index,
-      selectedTrabajo,
-      isInitialSelection,
-      data,
-    });
-
-    // Descripción:
-    // - Respeto backend si viene de initialPayload
-    // - Si el usuario no ha editado, uso descripcion del tipoTrabajo
     const descripcionFinal = isInitialSelection
       ? data.descripcion ?? selectedTrabajo.descripcion ?? ''
       : !userEditedDescripcion && selectedTrabajo.descripcion
       ? selectedTrabajo.descripcion.trim()
       : localDescripcion;
 
-    // PRECIO:
     const precioFinal = isInitialSelection
-      ? Number(data.precioUnitario) // <-- respeto backend
-      : Number(selectedTrabajo.precioBase); // <-- solo para selección manual
+      ? Number(data.precioUnitario)
+      : Number(selectedTrabajo.precioBase);
 
-    // Guardar el ORIGINAL correcto:
-    if (precioOriginalRef.current === null) {
-      precioOriginalRef.current = isInitialSelection
+    if (precioOriginalRef.current == null) {
+      const ori = isInitialSelection
         ? Number(data.precioUnitario)
         : Number(selectedTrabajo.precioBase);
+      precioOriginalRef.current = Number.isNaN(ori) ? null : ori;
     }
 
     const patch = {
       tipoTrabajo: selectedTrabajo,
       descripcion: descripcionFinal,
     };
-
-    // Solo rellenar precioUnitario si NO es inicial
-    if (!isInitialSelection) {
+    if (!isInitialSelection && !precioModificado) {
       patch.precioUnitario = precioFinal;
     }
 
-    log('UI:TRABAJO', 'Aplicando patch corregido', {
-      index,
-      isInitialSelection,
-      patch,
-    });
-
-    if (onChange) onChange(index, patch);
-    else updateLinea(index, patch);
+    onChange?.(index, patch) ?? updateLinea(index, patch);
   }, [selectedTrabajo]);
 
-  const precioActual = data.precioUnitario ?? '';
-  const precioOriginal = precioOriginalRef.current;
-
-  const precioModificado =
-    precioOriginal !== null &&
-    precioActual !== '' &&
-    Number(precioActual) !== Number(precioOriginal);
-
+  // ============================================================
+  // Render + Badges por campo
+  // ============================================================
   return (
-    <div
-      className="row linea-servicio"
-      style={{
-        marginTop: '10px',
-        borderLeft: precioModificado
-          ? '4px solid #f6c743'
-          : '4px solid transparent',
-      }}
-    >
-      {/* Autocomplete tipo de trabajo */}
-      <SelectAutocomplete
-        label="Tipo de trabajo"
-        placeholder="Buscar tipo de trabajo..."
-        query={query}
-        onChange={(v) => {
-          log('UI:TRABAJO', 'Input tipoTrabajo update', { index, query: v });
-          onQueryChange(v);
-        }}
-        resultados={resultados}
-        isOpen={isOpen}
-        onSelect={(t) => {
-          log('UI:TRABAJO', 'Seleccionado trabajo desde lista', {
-            index,
-            trabajo: t,
-          });
-          seleccionarTrabajo(t);
-        }}
-        cerrarResultados={() => {
-          log('UI:TRABAJO', 'Cerrar lista tipoTrabajo', { index });
-          cerrarResultados();
-        }}
-        abrirResultados={() => {
-          log('UI:TRABAJO', 'Abrir lista tipoTrabajo', { index });
-          abrirResultados();
-        }}
-        inputName={`tipoTrabajo-${index}`}
-        renderItem={(t) => (
-          <>
-            <div className="autocomplete-title">{t.nombre}</div>
-            <div className="autocomplete-sub">
-              S/{t.precioBase} — {t.descripcion}
-            </div>
-          </>
-        )}
-      />
+    <div className={`row linea-servicio estado-${estado}`}>
+      {/* Tipo trabajo */}
+      <div className="col tipoTrabajo-wrapper">
+        <div className="label-line">
+          <label>Tipo de trabajo</label>
+          {isLineaNueva && <span className="badge-campo badge-new">Nueva</span>}
+          {!isLineaNueva &&
+            diff.tipoTrabajo &&
+            diff.tipoTrabajo.from?.nombre !== diff.tipoTrabajo.to?.nombre && (
+              <span
+                className="badge-campo badge-modified"
+                title={`from: ${diff.tipoTrabajo?.from?.nombre ?? ''} → to: ${
+                  diff.tipoTrabajo?.to?.nombre ?? ''
+                }`}
+              >
+                Cambiado
+              </span>
+            )}
+        </div>
+        <SelectAutocomplete
+          placeholder="Buscar tipo de trabajo..."
+          query={query}
+          onChange={onQueryChange}
+          resultados={resultados}
+          isOpen={isOpen}
+          onSelect={seleccionarTrabajo}
+          cerrarResultados={cerrarResultados}
+          abrirResultados={abrirResultados}
+          inputName={`tipoTrabajo-${index}`}
+          renderItem={(t) => (
+            <>
+              <div className="autocomplete-title">{t.nombre}</div>
+              <div className="autocomplete-sub">
+                S/{t.precioBase} — {t.descripcion ?? ''}
+              </div>
+            </>
+          )}
+        />
+      </div>
 
       {/* Descripción */}
       <div className="col">
-        <label>Descripción</label>
+        <div className="label-line">
+          <label>Descripción</label>
+          {isLineaNueva && <span className="badge-campo badge-new">Nueva</span>}
+          {!isLineaNueva &&
+            diff.descripcion &&
+            diff.descripcion.from !== diff.descripcion.to && (
+              <span
+                className="badge-campo badge-modified"
+                title={`from: ${diff.descripcion?.from ?? ''} → to: ${
+                  diff.descripcion?.to ?? ''
+                }`}
+              >
+                Cambiada
+              </span>
+            )}
+        </div>
         <input
           type="text"
-          data-descripcion
           className="input-field"
           value={localDescripcion}
           onChange={(e) => {
             const val = e.target.value;
-
-            log('UI:DESCRIPCION', 'Descripción editada', { index, val });
-
             setUserEditedDescripcion(true);
             setLocalDescripcion(val);
-
             const patch = { descripcion: val };
-            if (onChange) onChange(index, patch);
-            else updateLinea(index, patch);
+            onChange?.(index, patch) ?? updateLinea(index, patch);
           }}
         />
       </div>
 
       {/* Precio */}
       <div className="col precio-col">
-        <label>
-          Precio{' '}
-          {precioModificado && (
-            <span className="badge-modificado">Modificado</span>
-          )}
-        </label>
-        <div
-          className="precio-wrapper"
-          title={
-            precioOriginal != null ? `Precio original: S/${precioOriginal}` : ''
-          }
-        >
-          <input
-            type="number"
-            className={`input-field ${
-              precioModificado ? 'precio-modificado' : ''
-            }`}
-            value={precioActual}
-            min="0"
-            step="0.1"
-            onChange={(e) => {
-              const v = e.target.value;
-
-              log('UI:PRECIO', 'Precio editado', { index, raw: v });
-
-              if (v === '') {
-                const patch = { precioUnitario: '' };
-                if (onChange) onChange(index, patch);
-                else updateLinea(index, patch);
-                return;
-              }
-
-              const num = Number(v);
-              if (isNaN(num) || num < 0) return;
-
-              const patch = { precioUnitario: num };
-              if (onChange) onChange(index, patch);
-              else updateLinea(index, patch);
-
-              log('UI:PRECIO', 'Precio actualizado', { index, num });
-            }}
-          />
+        <div className="label-line">
+          <label>Precio</label>
+          {isLineaNueva && <span className="badge-campo badge-new">Nueva</span>}
+          {!isLineaNueva &&
+            precioModificado &&
+            precioOriginal !== precioActual && (
+              <span
+                className="badge-campo badge-modified"
+                title={`from: ${precioOriginal ?? ''} → to: ${
+                  precioActual ?? ''
+                }`}
+              >
+                Modificado
+              </span>
+            )}
         </div>
+        <input
+          type="number"
+          className={`input-field ${
+            precioModificado ? 'precio-modificado' : ''
+          }`}
+          value={precioActual ?? ''}
+          min="0"
+          step="0.1"
+          onChange={(e) => {
+            const val = e.target.value;
+            if (val === '') {
+              const patch = { precioUnitario: '' };
+              onChange?.(index, patch) ?? updateLinea(index, patch);
+              return;
+            }
+            const num = Number(val);
+            if (isNaN(num) || num < 0) return;
+            const patch = { precioUnitario: num };
+            onChange?.(index, patch) ?? updateLinea(index, patch);
+          }}
+        />
       </div>
 
       {/* Botones */}
@@ -240,21 +255,14 @@ export function LineaServicio({ index, data = {}, onDelete, onChange }) {
         <button
           type="button"
           className="button-delete"
-          onClick={() => {
-            log('UI:LINEA', 'Eliminar línea desde botón', { index });
-            onDelete ? onDelete(index) : deleteLinea(index);
-          }}
+          onClick={() => (onDelete ? onDelete(index) : deleteLinea(index))}
         >
           🗑
         </button>
-
         <button
           type="button"
           className="button-reset"
-          onClick={() => {
-            log('UI:LINEA', 'Reset línea a estado original', { index });
-            resetLinea(index);
-          }}
+          onClick={() => resetLinea(index)}
         >
           ↺
         </button>

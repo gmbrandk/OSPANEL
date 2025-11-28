@@ -14,13 +14,25 @@ export function SelectAutocomplete({
   renderItem,
   inputName,
   abrirResultados,
+  isInitialSelection, // 👈 IMPORTANTE: lo pedimos
 }) {
   const handleToggle = () => {
+    // Si la UI está en modo inicial,
+    // ignoramos clics en el toggle.
+    if (isInitialSelection) return;
+
     if (isOpen) cerrarResultados();
     else abrirResultados();
   };
 
-  // 👇 CLAVE: en select queremos mostrar SIEMPRE todas las opciones
+  const handleFocus = () => {
+    // Si el foco viene de inicialización → NO ABRIR.
+    if (isInitialSelection) return;
+
+    abrirResultados();
+  };
+
+  // En select queremos mostrar todas las opciones sólo cuando isOpen = true
   const resultadosForSelect = isOpen ? resultados : [];
 
   return (
@@ -35,7 +47,7 @@ export function SelectAutocomplete({
       cerrarResultados={cerrarResultados}
       renderItem={renderItem}
       inputName={inputName}
-      onFocus={abrirResultados}
+      onFocus={handleFocus}
       onToggle={handleToggle}
       renderIcon={({ isOpen }) => (
         <img

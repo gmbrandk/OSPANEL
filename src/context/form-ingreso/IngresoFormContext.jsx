@@ -1,3 +1,7 @@
+// ============================================================
+// IngresoFormProvider – versión con LOGS + DEBUG UI + explainDiff
+// ============================================================
+
 import {
   createContext,
   useContext,
@@ -8,9 +12,9 @@ import {
 } from 'react';
 
 import { useAutosave } from '../../hooks/useAutosave';
-import { log } from '../../utils/log';
 
-// 🔥 IMPORTAR LOS CONTEXT NECESARIOS
+// Lookup contexts
+import { log } from '../../utils/log';
 import { useClientes } from './clientesContext';
 import { useEquipos } from './equiposContext';
 import { useTecnicos } from './tecnicosContext';
@@ -18,12 +22,38 @@ import { useTiposTrabajo } from './tiposTrabajoContext';
 
 const LS_KEY = 'formIngresoAutosave_v3';
 const LS_PERSIST = 'formPersistEnabled_v1';
-const EXPIRATION_MS = 3 * 60 * 60 * 1000; // 3 horas
+const EXPIRATION_MS = 3 * 60 * 60 * 1000;
+
+// 🟦 DEBUG PANEL
+const DEBUG_UI = true;
 
 const IngresoFormContext = createContext(null);
 
+// ============================================================
+// 🟪 explainDiff → para debug
+// ============================================================
+function explainDiff(actual, original) {
+  const diff = {};
+
+  const keys = new Set([
+    ...Object.keys(actual || {}),
+    ...Object.keys(original || {}),
+  ]);
+
+  for (const k of keys) {
+    const a = actual?.[k];
+    const b = original?.[k];
+
+    if (JSON.stringify(a) !== JSON.stringify(b)) {
+      diff[k] = { from: b, to: a };
+    }
+  }
+
+  return diff;
+}
+
 export function IngresoFormProvider({ children, initialPayload = null }) {
-  // Lookup providers
+  // LOOKUPS
   const { buscarClientePorId } = useClientes();
   const { buscarEquipoPorId } = useEquipos();
   const { buscarTecnicoPorId } = useTecnicos();
@@ -43,24 +73,40 @@ export function IngresoFormProvider({ children, initialPayload = null }) {
     fechaIngreso: new Date().toISOString(),
   });
 
-  const originalRef = useRef(null);
+  // ============================================================
+  // WHITELIST para TipoTrabajo (solo lo que importa al formulario)
+  // ============================================================
+  const CAMPOS_TRABAJO = ['_id', 'nombre', 'precioBase', 'categoria', 'activo'];
+
+  // ⭐ ORIGINAL REF
+  const originalRef = useRef({
+    cliente: null,
+    equipo: null,
+    tecnico: null,
+    orden: { lineas: {} },
+  });
+
   const initialLoadDoneRef = useRef(false);
 
-  // ==========================================================
-  //  🔥 persistEnabled con soporte real de LocalStorage
-  // ==========================================================
+  // Persistencia
   const [persistEnabled, setPersistEnabled] = useState(() => {
     const saved = localStorage.getItem(LS_PERSIST);
-    return saved ? saved === 'true' : true; // por default ON
+    return saved ? saved === 'true' : true;
   });
 
   useEffect(() => {
     localStorage.setItem(LS_PERSIST, persistEnabled);
   }, [persistEnabled]);
 
-  const autosaveValue = useMemo(() => {
-    return { cliente, equipo, tecnico, orden };
-  }, [cliente, equipo, tecnico, orden]);
+  const autosaveValue = useMemo(
+    () => ({
+      cliente,
+      equipo,
+      tecnico,
+      orden,
+    }),
+    [cliente, equipo, tecnico, orden]
+  );
 
   const autosaveReady = initialLoadDoneRef.current;
 
@@ -73,30 +119,23 @@ export function IngresoFormProvider({ children, initialPayload = null }) {
   });
 
   // ============================================================
-  // 🔄 CARGA INICIAL (autosave o initialPayload)
+  // 🔄 CARGA INICIAL
   // ============================================================
   useEffect(() => {
     if (loaded) return;
 
-    log('PROVIDER:LOAD', 'montando Provider → iniciando secuencia inicial');
+    console.log('🟦 PROV:LOAD → Iniciando carga inicial');
 
-    const apply = (data) => {
-      log('PROVIDER:LOAD', 'aplicando payload (loadPayload)', data);
-      loadPayload(data);
-    };
+    const apply = (data) => loadPayload(data);
 
     const saved = autosave.load();
+
     if (saved && Date.now() - saved.timestamp < EXPIRATION_MS) {
-      log(
-        'PROVIDER:LOAD',
-        'autosave restaurado → prioridad sobre initialPayload'
-      );
+      console.log('🟦 PROV:LOAD → usando autosave');
       apply(saved);
     } else if (initialPayload) {
-      log('PROVIDER:LOAD', 'initialPayload aplicado (no hay autosave)');
+      console.log('🟦 PROV:LOAD → usando initialPayload');
       apply(initialPayload);
-    } else {
-      log('PROVIDER:LOAD', 'sin autosave ni initialPayload');
     }
 
     setLoaded(true);
@@ -104,96 +143,81 @@ export function IngresoFormProvider({ children, initialPayload = null }) {
     initialLoadDoneRef.current = true;
   }, []);
 
-  function extractRecord(res, label = 'UNKNOWN') {
-    console.group(`🟦 extractRecord(${label})`);
-
-    console.log('📥 RAW response:', res);
-
-    let final = null;
-
-    if (!res) {
-      console.warn('❌ No response');
-      console.groupEnd();
-      return null;
-    }
-
-    // Caso: backend tipo { data: {...} }
-    if (res.data && typeof res.data === 'object' && !res.details) {
-      console.log('➡️ Extracted from res.data');
-      final = res.data;
-      console.log('📤 FINAL:', final);
-      console.groupEnd();
-      return final;
-    }
-
-    // Caso: backend tipo { success, details }
+  // Util: parse respuesta backend
+  function extractRecord(res) {
+    if (!res) return null;
+    if (res.data && typeof res.data === 'object') return res.data;
     if (res.details) {
       const values = Object.values(res.details);
-      if (values.length === 1 && values[0]?._id) {
-        console.log('➡️ Extracted from res.details.<entity>');
-        final = values[0];
-        console.log('📤 FINAL:', final);
-        console.groupEnd();
-        return final;
-      }
+      return values.length === 1 ? values[0] : null;
     }
-
-    // Ya es un objeto directo
-    if (res._id) {
-      console.log('➡️ Passed-through raw object');
-      final = res;
-      console.log('📤 FINAL:', final);
-      console.groupEnd();
-      return final;
-    }
-
-    console.warn('⚠️ NO MATCHING FORMAT, returning null');
-    console.groupEnd();
+    if (res._id) return res;
     return null;
   }
 
   // ============================================================
-  // 🔥 RESOLVE + NORMALIZE PAYLOAD
+  // 🔧 Filtrar objeto según whitelist (limpia ruido del backend)
+  // ============================================================
+  function filtrarCampos(obj, permitidos = CAMPOS_TRABAJO) {
+    if (!obj || typeof obj !== 'object') return null;
+    const out = {};
+    for (const key of permitidos) {
+      if (obj.hasOwnProperty(key)) out[key] = obj[key];
+    }
+    return out;
+  }
+
+  // ============================================================
+  // makeLinea
+  // ============================================================
+  function makeLinea(l = {}) {
+    const base = {
+      uid: crypto.randomUUID(),
+      descripcion: '',
+      precioUnitario: 0,
+      cantidad: 1,
+      isNew: true,
+      deleted: false,
+      errors: {},
+      backendConflict: false,
+    };
+
+    const linea = { ...base, ...l };
+
+    // Normalizar números silenciosamente
+    linea.precioUnitario = Number(linea.precioUnitario ?? 0);
+    linea.cantidad = Number(linea.cantidad ?? 1);
+
+    // Filtrar tipoTrabajo
+    linea.tipoTrabajo = filtrarCampos(linea.tipoTrabajo);
+
+    return linea;
+  }
+
+  // ============================================================
+  // loadPayload
   // ============================================================
   async function loadPayload(data) {
-    console.group('🔥 loadPayload INIT');
-    console.log('📥 Incoming payload:', data);
+    console.log('🟦 PROV:loadPayload →', data);
 
-    // -------------------------------------------
-    // 1) Cliente
-    // -------------------------------------------
+    // Cliente
     let clienteObj = null;
-
     if (data.representanteId) {
-      console.log('🔍 Fetching CLIENTE by ID:', data.representanteId);
-      const raw = await buscarClientePorId(data.representanteId);
-      console.log('📥 Cliente lookup RAW:', raw);
-      clienteObj = extractRecord(raw, 'cliente');
+      clienteObj = extractRecord(
+        await buscarClientePorId(data.representanteId)
+      );
     } else if (data.cliente?._id) {
-      console.log('🔍 Using direct cliente object');
-      clienteObj = extractRecord(data.cliente, 'cliente-direct');
+      clienteObj = extractRecord(data.cliente);
     }
 
-    console.log('✔ Cliente FINAL:', clienteObj);
-
-    // -------------------------------------------
-    // 2) Equipo
-    // -------------------------------------------
+    // Equipo
     let equipoObj = null;
-
     if (data.equipoId) {
-      console.log('🔍 Fetching EQUIPO by ID:', data.equipoId);
-      const raw = await buscarEquipoPorId(data.equipoId);
-      console.log('📥 Equipo lookup RAW:', raw);
-      equipoObj = extractRecord(raw, 'equipo');
+      equipoObj = extractRecord(await buscarEquipoPorId(data.equipoId));
     } else if (data.equipo?._id) {
-      console.log('🔍 Using direct equipo object');
-      equipoObj = extractRecord(data.equipo, 'equipo-direct');
+      equipoObj = extractRecord(data.equipo);
     }
 
-    console.log('✔ Equipo FIRST PASS:', equipoObj);
-
-    // Normalizar ficha técnica
     const ficha = equipoObj?.fichaTecnicaManual;
     const normalizedEquipo = ficha
       ? {
@@ -205,105 +229,43 @@ export function IngresoFormProvider({ children, initialPayload = null }) {
         }
       : equipoObj;
 
-    console.log('✔ Equipo FINAL:', normalizedEquipo);
-
-    // -------------------------------------------
-    // 3) Técnico
-    // -------------------------------------------
+    // Técnico
     let tecnicoObj = null;
-
     if (data.tecnico) {
-      console.log('🔍 Fetching TÉCNICO by ID:', data.tecnico);
-
-      const tecnicoId =
+      const id =
         typeof data.tecnico === 'string' ? data.tecnico : data.tecnico._id;
-
-      const raw = await buscarTecnicoPorId(tecnicoId);
-
-      console.log('📥 Técnico lookup RAW:', raw);
-      tecnicoObj = extractRecord(raw, 'tecnico');
+      tecnicoObj = extractRecord(await buscarTecnicoPorId(id));
     }
 
-    console.log('✔ Técnico FINAL:', tecnicoObj);
-
-    // -------------------------------------------
-    // 4) Lineas Servicio
-    // -------------------------------------------
-    console.group('📑 Resolviendo líneas de servicio');
-
+    // Líneas
+    const lineasRaw = data.lineasServicio ?? data.orden?.lineasServicio ?? [];
     const lineasServicio = await Promise.all(
-      (data.lineasServicio ?? data.orden?.lineasServicio ?? []).map(
-        async (l, i) => {
-          console.group(`➡️ Línea ${i}`);
-          console.log('RAW line:', l);
+      lineasRaw.map(async (l) => {
+        let tipoTrabajoObj = null;
 
-          let tipoTrabajoObj = null;
-
-          // 🚨 LOG 1: qué viene originalmente
-          console.log(`🟡 [${i}] tipoTrabajo ORIGINAL:`, l.tipoTrabajo);
-          console.log(`🟡 [${i}] typeof tipoTrabajo:`, typeof l.tipoTrabajo);
-
-          // ----------------------------------------------------
-          // 🔍 Normalizar ID
-          // ----------------------------------------------------
-          const tipoTrabajoId =
+        if (l.tipoTrabajo) {
+          const idTrabajo =
             typeof l.tipoTrabajo === 'string'
               ? l.tipoTrabajo
-              : l.tipoTrabajo?._id;
+              : l.tipoTrabajo._id;
 
-          // 🚨 LOG 2: después de intentar extraer ID
-          console.log(`🟠 [${i}] tipoTrabajoId EXTRAÍDO:`, tipoTrabajoId);
-
-          if (!tipoTrabajoId) {
-            console.warn(
-              `🔴 [${i}] NO SE PUDO EXTRAER UN ID VÁLIDO de tipoTrabajo:`,
-              l.tipoTrabajo
-            );
-          }
-
-          // ----------------------------------------------------
-          // 🔥 Lookup real
-          // ----------------------------------------------------
-          if (tipoTrabajoId) {
-            console.log(
-              `🔍 [${i}] Llamando buscarTipoTrabajoPorId(${tipoTrabajoId})`
-            );
-
-            const raw = await buscarTipoTrabajoPorId(tipoTrabajoId);
-
-            // 🚨 LOG 3: respuesta cruda
-            console.log(`📥 [${i}] Lookup RAW result:`, raw);
-
-            tipoTrabajoObj = extractRecord(raw, `tipoTrabajo-${i}`);
-
-            // 🚨 LOG 4: qué devolvió extractRecord
-            console.log(`📘 [${i}] extractRecord →`, tipoTrabajoObj);
-          }
-
-          // ----------------------------------------------------
-          // 🧩 Construir línea final
-          // ----------------------------------------------------
-          const final = {
-            ...l,
-            tipoTrabajo: tipoTrabajoObj,
-            precioUnitario: Number(l.precioUnitario ?? l.precio ?? 0),
-            cantidad: Number(l.cantidad ?? 1),
-          };
-
-          // 🚨 LOG 5: línea final
-          console.log(`✔ [${i}] Línea FINAL:`, final);
-
-          console.groupEnd();
-          return final;
+          tipoTrabajoObj = extractRecord(
+            await buscarTipoTrabajoPorId(idTrabajo)
+          );
         }
-      )
+
+        return makeLinea({
+          ...l,
+          tipoTrabajo: filtrarCampos(tipoTrabajoObj), // ← SOLO FIELDS PERMITIDOS
+          precioUnitario: Number(
+            l.precioUnitario ?? tipoTrabajoObj?.precioBase ?? 0
+          ),
+          cantidad: Number(l.cantidad ?? 1),
+          isNew: false,
+        });
+      })
     );
 
-    console.groupEnd();
-
-    // -------------------------------------------
-    // 5) Orden
-    // -------------------------------------------
     const normalizedOrden = {
       lineasServicio,
       diagnosticoCliente:
@@ -316,31 +278,29 @@ export function IngresoFormProvider({ children, initialPayload = null }) {
         new Date().toISOString(),
     };
 
-    console.log('✔ ORDEN FINAL:', normalizedOrden);
-
-    // -------------------------------------------
-    // 6) Set States
-    // -------------------------------------------
-    console.log('📌 SETTING STATES…');
-
     setCliente(clienteObj);
     setEquipo(normalizedEquipo);
     setTecnico(tecnicoObj);
     setOrden(normalizedOrden);
 
-    // Guardar snapshot inicial
+    // ORIGINAL REF
+    const mapLineas = {};
+    for (const linea of normalizedOrden.lineasServicio) {
+      mapLineas[linea.uid] = JSON.parse(JSON.stringify(linea));
+    }
+
     originalRef.current = {
-      cliente: clienteObj,
-      equipo: normalizedEquipo,
-      tecnico: tecnicoObj,
-      orden: normalizedOrden,
+      cliente: JSON.parse(JSON.stringify(clienteObj)),
+      equipo: JSON.parse(JSON.stringify(normalizedEquipo)),
+      tecnico: JSON.parse(JSON.stringify(tecnicoObj)),
+      orden: { lineas: mapLineas },
     };
 
-    console.groupEnd();
+    console.log('🟦 PROV:originalRef SET →', originalRef.current);
   }
 
   // ============================================================
-  // 🧮 Recalcular total cuando cambien lineas
+  // Recalcular total
   // ============================================================
   useEffect(() => {
     if (!orden.lineasServicio) return;
@@ -357,24 +317,18 @@ export function IngresoFormProvider({ children, initialPayload = null }) {
   }, [orden.lineasServicio]);
 
   // ============================================================
-  // 🔧 Helpers para líneas
+  // Helpers de líneas
   // ============================================================
   const addLinea = () => {
+    console.log('🟧 LINEA:add');
     setOrden((prev) => ({
       ...prev,
-      lineasServicio: [
-        ...prev.lineasServicio,
-        {
-          descripcion: '',
-          precioUnitario: 0,
-          cantidad: 1,
-          tipoTrabajo: null,
-        },
-      ],
+      lineasServicio: [...prev.lineasServicio, makeLinea()],
     }));
   };
 
   const deleteLinea = (index) => {
+    console.log('🟧 LINEA:delete', index);
     setOrden((prev) => ({
       ...prev,
       lineasServicio: prev.lineasServicio.filter((_, i) => i !== index),
@@ -390,53 +344,148 @@ export function IngresoFormProvider({ children, initialPayload = null }) {
           ? patchOrFn(current)
           : { ...current, ...patchOrFn };
 
-      if (JSON.stringify(current) === JSON.stringify(next)) return prev;
+      console.log('🟧 LINEA:update', { index, patch: patchOrFn, result: next });
 
       lineas[index] = next;
       return { ...prev, lineasServicio: lineas };
     });
 
   const resetLinea = (index) => {
-    const orig = originalRef.current?.orden?.lineasServicio?.[index];
+    const lineaActual = orden.lineasServicio[index];
+    if (!lineaActual) return;
+
+    const uid = lineaActual.uid;
+    const orig = originalRef.current?.orden?.lineas?.[uid];
+
     if (!orig) return;
-    updateLinea(index, orig);
+
+    console.log('🟧 LINEA:reset', index);
+
+    updateLinea(index, {
+      ...JSON.parse(JSON.stringify(orig)),
+      isNew: false,
+      deleted: false,
+      backendConflict: false,
+      errors: {},
+      _fromReset: true,
+    });
   };
 
-  const isLineaModificada = (index) => {
-    const orig = originalRef.current?.orden?.lineasServicio?.[index];
-    const now = orden.lineasServicio[index];
-    if (!orig && !now) return false;
-    if (!orig && now) return true;
-    if (!now) return true;
+  // ============================================================
+  // Detectar modificado
+  function isModified(actual, original) {
+    if (!original) return actual.isNew;
+
+    const aTT = filtrarCampos(actual.tipoTrabajo);
+    const oTT = filtrarCampos(original.tipoTrabajo);
 
     return (
-      orig.descripcion !== now.descripcion ||
-      Number(orig.precioUnitario) !== Number(now.precioUnitario) ||
-      Number(orig.cantidad) !== Number(now.cantidad) ||
-      JSON.stringify(orig.tipoTrabajo) !== JSON.stringify(now.tipoTrabajo)
+      actual.descripcion !== original.descripcion ||
+      Number(actual.precioUnitario) !== Number(original.precioUnitario) ||
+      Number(actual.cantidad) !== Number(original.cantidad) ||
+      JSON.stringify(aTT) !== JSON.stringify(oTT)
     );
-  };
+  }
 
   // ============================================================
-  // Misc
+  // resolveEstado
   // ============================================================
-  const getFullPayload = () => ({
-    cliente,
-    equipo,
-    tecnico,
-    orden,
-  });
+  function resolveEstado(lineaActual, lineaOriginal) {
+    const aTT = filtrarCampos(lineaActual.tipoTrabajo);
+    const oTT = filtrarCampos(lineaOriginal?.tipoTrabajo);
 
-  const clearAutosave = () => {
-    autosave.clear();
-    log('PROVIDER:AUTOSAVE', 'autosave limpiado manualmente');
-  };
+    const diff = explainDiff(
+      { ...lineaActual, tipoTrabajo: aTT },
+      { ...lineaOriginal, tipoTrabajo: oTT }
+    );
 
-  const submitAndClear = () => {
-    autosave.clear();
-    log('PROVIDER:AUTOSAVE', 'autosave limpiado después de submit');
-  };
+    const modified = isModified(lineaActual, lineaOriginal);
 
+    const estado =
+      lineaActual.errors && Object.keys(lineaActual.errors).length
+        ? 'error'
+        : lineaActual.deleted
+        ? 'deleted'
+        : lineaActual.backendConflict
+        ? 'conflict'
+        : lineaActual.isNew
+        ? 'new'
+        : modified
+        ? 'modified'
+        : 'clean';
+
+    log('🟨 ESTADO', {
+      uid: lineaActual.uid,
+      estado,
+      diff,
+      isNew: lineaActual.isNew,
+      deleted: lineaActual.deleted,
+    });
+
+    return estado;
+  }
+
+  // ============================================================
+  // Panel Debug UI
+  // ============================================================
+  const debugPanel = (() => {
+    if (!DEBUG_UI) return null;
+    if (!orden.lineasServicio) return null;
+
+    const counters = {
+      new: 0,
+      modified: 0,
+      clean: 0,
+      deleted: 0,
+      conflict: 0,
+      error: 0,
+    };
+
+    orden.lineasServicio.forEach((l) => {
+      const orig = originalRef.current?.orden?.lineas?.[l.uid] ?? null;
+      const est = resolveEstado(l, orig);
+      counters[est]++;
+    });
+
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          padding: '12px',
+          background: '#222',
+          color: 'white',
+          borderRadius: '8px',
+          zIndex: 9999,
+          fontSize: '12px',
+        }}
+      >
+        <div>🔍 DEBUG UI</div>
+        <div>New: {counters.new}</div>
+        <div>Modified: {counters.modified}</div>
+        <div>Clean: {counters.clean}</div>
+        <div>Conflict: {counters.conflict}</div>
+        <div>Deleted: {counters.deleted}</div>
+        <div>Error: {counters.error}</div>
+
+        <button
+          style={{ marginTop: '8px', padding: '4px 6px' }}
+          onClick={() => {
+            console.log('🟪 DIFF:GLOBAL →', {
+              actual: orden.lineasServicio,
+              original: originalRef.current,
+            });
+          }}
+        >
+          Print DIFF
+        </button>
+      </div>
+    );
+  })();
+
+  // ============================================================
+  // Provider
   // ============================================================
   return (
     <IngresoFormContext.Provider
@@ -454,21 +503,21 @@ export function IngresoFormProvider({ children, initialPayload = null }) {
         deleteLinea,
         updateLinea,
         resetLinea,
+        makeLinea,
 
-        getFullPayload,
-        isLineaModificada,
-        clearAutosave,
-        submitAndClear,
+        resolveEstado,
+        originalRef,
+        explainDiff,
 
         persistEnabled,
         setPersistEnabled,
-
-        loaded,
         autosave,
         autosaveReady,
+        loaded,
       }}
     >
       {children}
+      {debugPanel}
     </IngresoFormContext.Provider>
   );
 }

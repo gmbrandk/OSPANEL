@@ -2,11 +2,12 @@ import { useEffect } from 'react';
 import { useIngresoForm } from '../../context/form-ingreso/IngresoFormContext';
 import { useAutocompleteTecnico } from '../../hooks/form-ingreso/useAutocompleteTecnico';
 import { log } from '../../utils/log';
+import { ROLES_PERMITIDOS_EDITAR_TECNICO } from '../../utils/roles';
 import { Autocomplete } from './Autocomplete';
 import Collapsible from './Collapsible';
 import { LineaServicio } from './LineaServicio';
 
-export function OrdenServicio() {
+export function OrdenServicio({ role }) {
   const {
     tecnico,
     setTecnico,
@@ -17,6 +18,7 @@ export function OrdenServicio() {
     updateLinea,
   } = useIngresoForm();
 
+  const readOnlyTecnico = role !== 'superadministrador'; // 🔒 PERMISO
   // ============================
   // AUTOCOMPLETE TÉCNICO
   // ============================
@@ -35,6 +37,15 @@ export function OrdenServicio() {
   // SYNC: Autocomplete → Context
   // ============================
   useEffect(() => {
+    if (selectedTecnico && selectedTecnico._id) {
+      log('UI:TECNICO', 'Sync hacia IngresoFormContext', selectedTecnico);
+      setTecnico(selectedTecnico);
+    }
+  }, [selectedTecnico]);
+
+  useEffect(() => {
+    if (readOnlyTecnico) return; // 🔒 blindaje lógico
+
     if (selectedTecnico && selectedTecnico._id) {
       log('UI:TECNICO', 'Sync hacia IngresoFormContext', selectedTecnico);
       setTecnico(selectedTecnico);
@@ -67,16 +78,25 @@ export function OrdenServicio() {
     <>
       {/* TÉCNICO */}
       <div className="row">
+        {!ROLES_PERMITIDOS_EDITAR_TECNICO.includes(role) && (
+          <div className="alert-info" style={{ marginBottom: 10 }}>
+            Tu rol no permite modificar el técnico asignado.
+          </div>
+        )}
+      </div>
+
+      <div className="row">
         <Autocomplete
+          disabled={readOnlyTecnico} // 🟡 UI bloqueada
           label="Técnico"
           placeholder="Buscar técnico…"
           inputName="tecnico"
           query={query}
-          onChange={onQueryChange}
+          onChange={readOnlyTecnico ? undefined : onQueryChange}
           resultados={resultados}
           isOpen={isOpen}
-          onSelect={seleccionarTecnico}
-          abrirResultados={abrirResultados}
+          onSelect={readOnlyTecnico ? undefined : seleccionarTecnico}
+          abrirResultados={readOnlyTecnico ? undefined : abrirResultados}
           cerrarResultados={cerrarResultados}
           renderItem={(t) => (
             <>
@@ -116,7 +136,7 @@ export function OrdenServicio() {
       >
         {orden.lineasServicio.map((linea, i) => (
           <LineaServicio
-            key={i}
+            key={linea.uid} // ← YA NO SE ROMPE EL ESTADO
             index={i}
             data={linea}
             onDelete={eliminarLinea}

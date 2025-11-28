@@ -6,6 +6,9 @@ import { buildOrdenPayload } from './utils/buildOrdenPayload';
 import { ensureAuth } from './utils/ensureAuth';
 import { normalizeOrdenPayload } from './utils/normalizeOrdenPayload';
 
+import OSPreview from './components/OSPreview';
+import OSPreviewPDFWrapper from './components/OSPreviewPDFWrapper';
+
 import './config/form-ingreso/init/clienteServiceInit';
 import './config/form-ingreso/init/equipoServiceInit';
 import './config/form-ingreso/init/tecnicoServiceInit';
@@ -15,6 +18,16 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [initialData, setInitialData] = useState(null);
   const [payloadVisual, setPayloadVisual] = useState(null);
+
+  const [usuario, setUsuario] = useState(null);
+
+  useEffect(() => {
+    async function authFlow() {
+      const user = await ensureAuth();
+      setUsuario(user);
+    }
+    authFlow();
+  }, []);
 
   useEffect(() => {
     ensureAuth();
@@ -36,6 +49,8 @@ function App() {
     return <p style={{ padding: '2rem' }}>Cargando orden simulada...</p>;
   }
 
+  if (!usuario) return <p>Cargando autenticación...</p>;
+
   return (
     <div style={{ padding: '30px', fontFamily: 'sans-serif' }}>
       <h1>🧾 Simulador de Ingreso de Servicio Técnico (Modo GET Simulado)</h1>
@@ -45,6 +60,7 @@ function App() {
 
       <FormIngreso
         initialPayload={initialData}
+        role="tecnico" // ← aquí se inyecta el rol
         onSubmit={(data) => {
           const payload = buildOrdenPayload(data);
           setPayloadVisual(payload);
@@ -70,6 +86,10 @@ function App() {
         </div>
       )}
       {window.DEBUG && <DevLogPanel />}
+      <OSPreview orden={payloadVisual} />
+
+      {/* PDF ready con React-PDF */}
+      <OSPreviewPDFWrapper orden={payloadVisual} />
     </div>
   );
 }

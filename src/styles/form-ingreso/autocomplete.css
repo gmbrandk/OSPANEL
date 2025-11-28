@@ -65,6 +65,28 @@
 .rotated {
   transform: rotate(180deg);
 }
+
+.autocomplete-disabled {
+  background: #f0f0f0 !important;
+  border-color: #d0d0d0 !important;
+  cursor: not-allowed !important;
+  opacity: 0.7;
+}
+
+.autocomplete-disabled input {
+  cursor: not-allowed !important;
+}
+
+.autocomplete-container.disabled .autocomplete-actions button {
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+.autocomplete-disabled .autocomplete-actions {
+  background: #f0f0f0 !important;
+  border-color: #d0d0d0 !important;
+}
+
 /* =====================================================
    📜 Lista
 ===================================================== */

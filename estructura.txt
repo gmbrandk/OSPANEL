@@ -51,7 +51,6 @@
 │   │   │   ├── search.svg
 │   │   │   └── search.webp
 │   │   └── react.svg
-│   ├── clienteServiceInit.js
 │   ├── components
 │   │   ├── DevLogPanel.jsx
 │   │   ├── PersistenSwitch.jsx
@@ -69,20 +68,26 @@
 │   │       ├── TecnicoSection.jsx
 │   │       └── index.js
 │   ├── config
-│   │   ├── entorno.js
-│   │   └── proveedores.js
+│   │   └── form-ingreso
+│   │       ├── entorno.js
+│   │       ├── init
+│   │       │   ├── clienteServiceInit.js
+│   │       │   ├── equipoServiceInit.js
+│   │       │   ├── tecnicoServiceInit.js
+│   │       │   └── tipoTrabajoServiceInit.js
+│   │       └── proveedores.js
 │   ├── context
-│   │   ├── CollapsibleGroupContext.jsx
-│   │   ├── IngresoFormContext.jsx
-│   │   ├── clientesContext.jsx
-│   │   ├── equiposContext.jsx
-│   │   ├── tecnicosContext.jsx
-│   │   └── tiposTrabajoContext.jsx
+│   │   └── form-ingreso
+│   │       ├── CollapsibleGroupContext.jsx
+│   │       ├── IngresoFormContext.jsx
+│   │       ├── clientesContext.jsx
+│   │       ├── equiposContext.jsx
+│   │       ├── tecnicosContext.jsx
+│   │       └── tiposTrabajoContext.jsx
 │   ├── data
 │   │   └── exampleInitialData.js
 │   ├── docs
 │   │   └── form-ingreso.md
-│   ├── equipoServiceInit.js
 │   ├── hooks
 │   │   ├── form-ingreso
 │   │   │   ├── useAutocompleteCliente.js
@@ -101,26 +106,23 @@
 │   ├── pages
 │   │   └── IngresoPage.jsx
 │   ├── service
-│   │   ├── clientes
-│   │   │   ├── clienteService.js
-│   │   │   └── providers
-│   │   │       ├── apiProvider.js
-│   │   │       └── localStorageProvider.js
-│   │   ├── equipos
-│   │   │   ├── equipoService.js
-│   │   │   └── providers
-│   │   │       ├── apiProvider.js
-│   │   │       └── localStorageProvider.js
-│   │   ├── tecnicos
-│   │   │   ├── providers
-│   │   │   │   ├── apiProvider.js
-│   │   │   │   └── localStorageProvider.js
-│   │   │   └── tecnicoService.js
-│   │   └── tiposTrabajo
-│   │       ├── providers
-│   │       │   ├── apiProvider.js
-│   │       │   └── localStorageProvider.js
-│   │       └── tiposTrabajoService.js
+│   │   └── form-ingreso
+│   │       ├── clientes
+│   │       │   ├── clienteService.js
+│   │       │   └── providers
+│   │       │       └── ... (oculto)
+│   │       ├── equipos
+│   │       │   ├── equipoService.js
+│   │       │   └── providers
+│   │       │       └── ... (oculto)
+│   │       ├── tecnicos
+│   │       │   ├── providers
+│   │       │   │   └── ... (oculto)
+│   │       │   └── tecnicoService.js
+│   │       └── tiposTrabajo
+│   │           ├── providers
+│   │           │   └── ... (oculto)
+│   │           └── tiposTrabajoService.js
 │   ├── styles
 │   │   └── form-ingreso
 │   │       ├── autocomplete.css
@@ -132,8 +134,6 @@
 │   │       ├── layout.css
 │   │       ├── linea-servicio.css
 │   │       └── telefono.css
-│   ├── tecnicoServiceInit.js
-│   ├── tipoTrabajoServiceInit.js
 │   └── utils
 │       ├── LogBuffer.js
 │       ├── autoSave.js

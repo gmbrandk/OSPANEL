@@ -16,53 +16,60 @@ export function AutocompleteBase({
   renderItem,
   inputName,
   onFocus,
-  renderIcon, // 👈 nuevo
+  renderIcon,
+  disabled = false, // 👈 NUEVO
 }) {
-  const showClear = Boolean(query?.trim());
+  const showClear = Boolean(query?.trim()) && !disabled;
   const blurTimeout = useRef(null);
   const items = resultados ?? [];
 
   useEffect(() => {
-    return () => {
-      if (blurTimeout.current) clearTimeout(blurTimeout.current);
-    };
+    return () => blurTimeout.current && clearTimeout(blurTimeout.current);
   }, []);
 
   return (
-    <div className="col autocomplete-container">
+    <div className={`col autocomplete-container ${disabled ? 'disabled' : ''}`}>
       {label && <label htmlFor={inputName}>{label}</label>}
 
       <div className="autocomplete-wrapper">
-        <div className="autocomplete-input-wrapper">
+        <div
+          className={`autocomplete-input-wrapper ${
+            disabled ? 'autocomplete-disabled' : ''
+          }`}
+        >
           <input
             id={inputName}
             name={inputName}
             type="text"
             className="input-field autocomplete-input"
             value={query}
-            onChange={(e) => onChange(e.target.value)}
+            onChange={(e) => !disabled && onChange(e.target.value)}
             onBlur={() => {
+              if (disabled) return;
               blurTimeout.current = setTimeout(() => cerrarResultados?.(), 150);
             }}
             onFocus={() => {
+              if (disabled) return;
               if (blurTimeout.current) {
                 clearTimeout(blurTimeout.current);
                 blurTimeout.current = null;
               }
               onFocus?.();
             }}
-            onClick={() => !isOpen && onToggle()}
+            onClick={() => !disabled && !isOpen && onToggle()}
             autoComplete="off"
             placeholder={placeholder}
+            disabled={disabled} // 👈 BLOQUEO DE INPUT
           />
 
-          {/* Icon buttons container */}
+          {/* iconos */}
           <div className="autocomplete-actions">
             {showClear && (
               <button
                 className="autocomplete-clear"
                 type="button"
                 onMouseDown={(e) => {
+                  if (disabled) return;
                   e.preventDefault();
                   onChange('');
                   onFocus?.();
@@ -72,11 +79,12 @@ export function AutocompleteBase({
               </button>
             )}
 
-            {/* 👇 ESTA ES LA CLAVE: icono configurable */}
             <button
               type="button"
               className="autocomplete-toggle"
+              disabled={disabled}
               onMouseDown={(e) => {
+                if (disabled) return;
                 e.preventDefault();
                 onToggle();
               }}
@@ -86,14 +94,15 @@ export function AutocompleteBase({
           </div>
         </div>
 
-        {isOpen && items.length > 0 && (
+        {/* lista bloqueada */}
+        {isOpen && !disabled && items.length > 0 && (
           <div className="autocomplete-list" role="listbox">
             {items.map((item) => (
               <div
-                key={item._id || item.id}
+                key={item._id || item.id || item.nombre}
                 className="autocomplete-item"
                 role="option"
-                onMouseDown={() => onSelect(item)}
+                onMouseDown={() => !disabled && onSelect(item)}
               >
                 {renderItem ? renderItem(item) : <>{item.nombre}</>}
               </div>
