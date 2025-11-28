@@ -8,7 +8,7 @@ import { ClientesProvider } from '../../context/form-ingreso/clientesContext.jsx
 import { EquiposProvider } from '../../context/form-ingreso/equiposContext.jsx'; // 👈 AÑADIDO
 import { TecnicosProvider } from '../../context/form-ingreso/tecnicosContext.jsx';
 import { TiposTrabajoProvider } from '../../context/form-ingreso/tiposTrabajoContext.jsx';
-import { ROLES_PERMITIDOS_EDITAR_TECNICO } from '../../utils/roles.js';
+import { ROLES_PERMITIDOS_EDITAR_TECNICO } from '../../utils/form-ingreso/roles.js';
 
 import { PersistSwitch } from '../PersistenSwitch.jsx';
 import { ClienteSection } from './ClienteSection.jsx';

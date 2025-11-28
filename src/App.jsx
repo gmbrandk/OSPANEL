@@ -2,12 +2,11 @@ import { useEffect, useState } from 'react';
 import { mockGetOrdenServicioById } from './__mock__/ordenServicioMocks';
 import DevLogPanel from './components/DevLogPanel';
 import FormIngreso from './components/form-ingreso/FormIngreso';
-import { buildOrdenPayload } from './utils/buildOrdenPayload';
-import { ensureAuth } from './utils/ensureAuth';
-import { normalizeOrdenPayload } from './utils/normalizeOrdenPayload';
+import { buildOrdenPayload } from './utils/form-ingreso/buildOrdenPayload';
+import { ensureAuth } from './utils/form-ingreso/ensureAuth';
+import { normalizeOrdenPayload } from './utils/form-ingreso/normalizeOrdenPayload';
 
 import OSPreview from './components/OSPreview';
-import OSPreviewPDFWrapper from './components/OSPreviewPDFWrapper';
 
 import './config/form-ingreso/init/clienteServiceInit';
 import './config/form-ingreso/init/equipoServiceInit';
@@ -60,7 +59,7 @@ function App() {
 
       <FormIngreso
         initialPayload={initialData}
-        role="tecnico" // ← aquí se inyecta el rol
+        role={usuario.role} // ← aquí se inyecta el rol
         onSubmit={(data) => {
           const payload = buildOrdenPayload(data);
           setPayloadVisual(payload);
@@ -87,9 +86,6 @@ function App() {
       )}
       {window.DEBUG && <DevLogPanel />}
       <OSPreview orden={payloadVisual} />
-
-      {/* PDF ready con React-PDF */}
-      <OSPreviewPDFWrapper orden={payloadVisual} />
     </div>
   );
 }

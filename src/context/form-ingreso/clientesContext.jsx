@@ -1,7 +1,7 @@
 // context/ClientesContext.jsx
 import { createContext, useCallback, useContext, useState } from 'react';
 import { getClienteService } from '../../service/form-ingreso/clientes/ClienteService';
-import { log } from '../../utils/log';
+import { log } from '../../utils/form-ingreso/log';
 
 const ClientesContext = createContext(null);
 

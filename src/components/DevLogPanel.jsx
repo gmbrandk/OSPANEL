@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { LogBuffer } from '../utils/LogBuffer';
+import { LogBuffer } from '../utils/form-ingreso/LogBuffer';
 
 export default function DevLogPanel() {
   const [open, setOpen] = useState(false);

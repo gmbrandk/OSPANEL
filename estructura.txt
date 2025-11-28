@@ -53,6 +53,10 @@
 │   │   └── react.svg
 │   ├── components
 │   │   ├── DevLogPanel.jsx
+│   │   ├── OSPreview.jsx
+│   │   ├── OSPreviewPDF.jsx
+│   │   ├── OSPreviewPDFWrapper.jsx
+│   │   ├── OSPrintButton.jsx
 │   │   ├── PersistenSwitch.jsx
 │   │   └── form-ingreso
 │   │       ├── Autocomplete.jsx
@@ -124,6 +128,8 @@
 │   │           │   └── ... (oculto)
 │   │           └── tiposTrabajoService.js
 │   ├── styles
+│   │   ├── OSPreview.css
+│   │   ├── OSPreview.print.css
 │   │   └── form-ingreso
 │   │       ├── autocomplete.css
 │   │       ├── base.css
@@ -144,6 +150,7 @@
 │       ├── log.js
 │       ├── normalizarEquipo.js
 │       ├── normalizarTecnico.js
-│       └── normalizeOrdenPayload.js
+│       ├── normalizeOrdenPayload.js
+│       └── roles.js
 ├── todoNextPopulateForm.html
 └── vite.config.js

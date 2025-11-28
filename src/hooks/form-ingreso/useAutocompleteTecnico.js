@@ -1,7 +1,7 @@
 // hooks/form-ingreso/useAutocompleteTecnico.js
 import { useEffect, useRef, useState } from 'react';
 import { useTecnicos } from '../../context/form-ingreso/tecnicosContext';
-import { normalizarTecnico } from '../../utils/normalizarTecnico';
+import { normalizarTecnico } from '../../utils/form-ingreso/normalizarTecnico';
 
 const EMPTY_TECNICO = normalizarTecnico({
   _id: null,

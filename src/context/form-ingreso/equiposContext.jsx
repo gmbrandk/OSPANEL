@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useState } from 'react';
 import { getEquiposService } from '../../service/form-ingreso/equipos/equipoService';
-import { log } from '../../utils/log';
+import { log } from '../../utils/form-ingreso/log';
 
 const EquiposContext = createContext(null);
 

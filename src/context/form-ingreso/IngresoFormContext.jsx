@@ -14,7 +14,7 @@ import {
 import { useAutosave } from '../../hooks/useAutosave';
 
 // Lookup contexts
-import { log } from '../../utils/log';
+import { log } from '../../utils/form-ingreso/log';
 import { useClientes } from './clientesContext';
 import { useEquipos } from './equiposContext';
 import { useTecnicos } from './tecnicosContext';
