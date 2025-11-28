@@ -1,7 +1,7 @@
 // components/OSPreviewPDFWrapper.jsx
 import { PDFDownloadLink, PDFViewer } from '@react-pdf/renderer';
 import { useState } from 'react';
-import OSPreviewPDF from './OSPreviewPDF';
+import OSPreviewPDF from '@components/OSPreviewPDF';
 
 export default function OSPreviewPDFWrapper({ orden }) {
   const [open, setOpen] = useState(false);

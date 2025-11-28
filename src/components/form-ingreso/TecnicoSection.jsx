@@ -1,5 +1,5 @@
 // src/components/form-ingreso/TecnicoSection.jsx
-import { useAutocompleteTecnico } from '../../hooks/form-ingreso/useAutocompleteTecnico.js';
+import { useAutocompleteTecnico } from '@hooks/form-ingreso/useAutocompleteTecnico.js';
 
 export function TecnicoSection() {
   const {

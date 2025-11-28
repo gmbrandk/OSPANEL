@@ -1,5 +1,5 @@
-import { ClienteSection } from '../components/form-ingreso/ClienteSection';
-import { EquipoSection } from '../components/form-ingreso/EquipoSection';
+import { ClienteSection } from '@components/form-ingreso/ClienteSection';
+import { EquipoSection } from '@components/form-ingreso/EquipoSection';
 import { OrdenServicio } from '../components/form-ingreso/OrdenServicio';
 import { IngresoFormProvider } from '../context/IngresoFormContext';
 

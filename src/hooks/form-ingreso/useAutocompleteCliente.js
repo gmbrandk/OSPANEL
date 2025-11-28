@@ -1,6 +1,6 @@
 // hooks/form-ingreso/useAutocompleteCliente.js
 import { useEffect, useRef, useState } from 'react';
-import { useClientes } from '../../context/form-ingreso/clientesContext';
+import { useClientes } from '@context/form-ingreso/clientesContext';
 
 const EMPTY_CLIENT = {
   _id: null,

@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import { mockGetOrdenServicioById } from './__mock__/ordenServicioMocks';
-import DevLogPanel from './components/DevLogPanel';
-import FormIngreso from './components/form-ingreso/FormIngreso';
-import { buildOrdenPayload } from './utils/form-ingreso/buildOrdenPayload';
-import { ensureAuth } from './utils/form-ingreso/ensureAuth';
-import { normalizeOrdenPayload } from './utils/form-ingreso/normalizeOrdenPayload';
+import { mockGetOrdenServicioById } from '@__mock__/ordenServicioMocks';
+import DevLogPanel from '@components/DevLogPanel';
+import FormIngreso from '@components/form-ingreso/FormIngreso';
+import { buildOrdenPayload } from '@utils/form-ingreso/buildOrdenPayload';
+import { ensureAuth } from '@utils/form-ingreso/ensureAuth';
+import { normalizeOrdenPayload } from '@utils/form-ingreso/normalizeOrdenPayload';
 
-import OSPreview from './components/OSPreview';
+import OSPreview from '@components/OSPreview';
 
 import './config/form-ingreso/init/clienteServiceInit';
 import './config/form-ingreso/init/equipoServiceInit';

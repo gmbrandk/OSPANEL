@@ -3,9 +3,9 @@
 // ============================================================
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useIngresoForm } from '../../context/form-ingreso/IngresoFormContext';
-import { useAutocompleteTipoTrabajo } from '../../hooks/form-ingreso/useAutocompleteTipoTrabajo';
-import { SelectAutocomplete } from './SelectAutocomplete.jsx';
+import { useIngresoForm } from '@context/form-ingreso/IngresoFormContext';
+import { useAutocompleteTipoTrabajo } from '@hooks/form-ingreso/useAutocompleteTipoTrabajo';
+import { SelectAutocomplete } from '@components/form-ingreso/SelectAutocomplete.jsx';
 
 export function LineaServicio({ index, data = {}, onDelete, onChange }) {
   const {

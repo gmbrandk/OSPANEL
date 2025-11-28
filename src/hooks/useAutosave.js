@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { log } from '../utils/form-ingreso/log'; // ← usa logger unificado
+import { log } from '@utils/form-ingreso/log'; // ← usa logger unificado
 
 /**
  * Autosave estable con:

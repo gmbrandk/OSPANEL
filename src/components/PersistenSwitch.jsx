@@ -1,4 +1,4 @@
-import { useIngresoForm } from '../context/form-ingreso/IngresoFormContext';
+import { useIngresoForm } from '@context/form-ingreso/IngresoFormContext';
 
 export function PersistSwitch() {
   const { persistEnabled, setPersistEnabled } = useIngresoForm();

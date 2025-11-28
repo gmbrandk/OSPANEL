@@ -1,7 +1,7 @@
 // tipoTrabajoServiceInit.js
-import { inicializarTiposTrabajoService } from '../../../service/form-ingreso/tiposTrabajo/tiposTrabajoService';
-import { proveedorTiposTrabajo } from '../entorno';
-import { mapaProveedoresTiposTrabajo } from '../proveedores';
+import { inicializarTiposTrabajoService } from '@services/form-ingreso/tiposTrabajo/tiposTrabajoService';
+import { proveedorTiposTrabajo } from '@config/form-ingreso/entorno';
+import { mapaProveedoresTiposTrabajo } from '@config/form-ingreso/proveedores';
 
 const proveedorSeleccionado =
   mapaProveedoresTiposTrabajo[proveedorTiposTrabajo];

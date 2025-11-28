@@ -1,6 +1,6 @@
 // SelectAutocomplete.jsx
 import dropdownArrow from '../../assets/form-ingreso/dropdown-arrow.svg';
-import { AutocompleteBase } from './AutocompleteBase.jsx';
+import { AutocompleteBase } from '@components/form-ingreso/AutocompleteBase.jsx';
 
 export function SelectAutocomplete({
   label,

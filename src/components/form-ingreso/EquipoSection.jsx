@@ -1,9 +1,9 @@
 // src/components/form-ingreso/EquipoSection.jsx
 import { useEffect } from 'react';
-import { useIngresoForm } from '../../context/form-ingreso/IngresoFormContext.jsx';
-import { useAutocompleteEquipo } from '../../hooks/form-ingreso/useAutocompleteEquipo';
-import { Autocomplete } from './Autocomplete.jsx';
-import Collapsible from './Collapsible.jsx'; // ajusta la ruta según tu estructura
+import { useIngresoForm } from '@context/form-ingreso/IngresoFormContext.jsx';
+import { useAutocompleteEquipo } from '@hooks/form-ingreso/useAutocompleteEquipo';
+import { Autocomplete } from '@components/form-ingreso/Autocomplete.jsx';
+import Collapsible from '@components/form-ingreso/Collapsible.jsx'; // ajusta la ruta según tu estructura
 
 export function EquipoSection() {
   const { equipo, setEquipo } = useIngresoForm();

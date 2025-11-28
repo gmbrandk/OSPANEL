@@ -29,6 +29,8 @@
 │       └── totales.js
 ├── public
 │   └── vite.svg
+├── scripts
+│   └── refactor_aliases.js
 ├── setup-form-ingreso.ps1
 ├── src
 │   ├── App.css
@@ -141,16 +143,17 @@
 │   │       ├── linea-servicio.css
 │   │       └── telefono.css
 │   └── utils
-│       ├── LogBuffer.js
-│       ├── autoSave.js
-│       ├── buildOrdenPayload.js
-│       ├── deepEqual.js
-│       ├── diffLineaServicio.js
-│       ├── ensureAuth.js
-│       ├── log.js
-│       ├── normalizarEquipo.js
-│       ├── normalizarTecnico.js
-│       ├── normalizeOrdenPayload.js
-│       └── roles.js
+│       └── form-ingreso
+│           ├── LogBuffer.js
+│           ├── autoSave.js
+│           ├── buildOrdenPayload.js
+│           ├── deepEqual.js
+│           ├── diffLineaServicio.js
+│           ├── ensureAuth.js
+│           ├── log.js
+│           ├── normalizarEquipo.js
+│           ├── normalizarTecnico.js
+│           ├── normalizeOrdenPayload.js
+│           └── roles.js
 ├── todoNextPopulateForm.html
 └── vite.config.js

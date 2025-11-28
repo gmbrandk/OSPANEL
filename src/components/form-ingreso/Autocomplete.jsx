@@ -1,5 +1,5 @@
 import searchIcon from '../../assets/form-ingreso/search.svg';
-import { AutocompleteBase } from './AutocompleteBase.jsx';
+import { AutocompleteBase } from '@components/form-ingreso/AutocompleteBase.jsx';
 
 export function Autocomplete({
   label,

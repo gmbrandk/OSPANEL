@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
-import { useIngresoForm } from '../../context/form-ingreso/IngresoFormContext';
-import { useAutocompleteTecnico } from '../../hooks/form-ingreso/useAutocompleteTecnico';
-import { log } from '../../utils/form-ingreso/log';
-import { ROLES_PERMITIDOS_EDITAR_TECNICO } from '../../utils/form-ingreso/roles';
-import { Autocomplete } from './Autocomplete';
-import Collapsible from './Collapsible';
-import { LineaServicio } from './LineaServicio';
+import { useIngresoForm } from '@context/form-ingreso/IngresoFormContext';
+import { useAutocompleteTecnico } from '@hooks/form-ingreso/useAutocompleteTecnico';
+import { log } from '@utils/form-ingreso/log';
+import { ROLES_PERMITIDOS_EDITAR_TECNICO } from '@utils/form-ingreso/roles';
+import { Autocomplete } from '@components/form-ingreso/Autocomplete';
+import Collapsible from '@components/form-ingreso/Collapsible';
+import { LineaServicio } from '@components/form-ingreso/LineaServicio';
 
 export function OrdenServicio({ role }) {
   const {

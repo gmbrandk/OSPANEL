@@ -1,9 +1,9 @@
 // components/Collapsible.jsx
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import dropdownArrow from '../../assets/form-ingreso/dropdown-arrow.svg';
-import { useCollapsibleGroup } from '../../context/form-ingreso/CollapsibleGroupContext';
-import { useCollapsible } from '../../hooks/form-ingreso/useCollapsible';
-import { useSummary } from '../../hooks/form-ingreso/useSummary';
+import { useCollapsibleGroup } from '@context/form-ingreso/CollapsibleGroupContext';
+import { useCollapsible } from '@hooks/form-ingreso/useCollapsible';
+import { useSummary } from '@hooks/form-ingreso/useSummary';
 
 export default function Collapsible({
   title,

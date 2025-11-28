@@ -1,20 +1,20 @@
-import { CollapsibleGroupProvider } from '../../context/form-ingreso/CollapsibleGroupContext';
+import { CollapsibleGroupProvider } from '@context/form-ingreso/CollapsibleGroupContext';
 import {
   IngresoFormProvider,
   useIngresoForm,
-} from '../../context/form-ingreso/IngresoFormContext';
+} from '@context/form-ingreso/IngresoFormContext';
 
-import { ClientesProvider } from '../../context/form-ingreso/clientesContext.jsx';
-import { EquiposProvider } from '../../context/form-ingreso/equiposContext.jsx'; // 👈 AÑADIDO
-import { TecnicosProvider } from '../../context/form-ingreso/tecnicosContext.jsx';
-import { TiposTrabajoProvider } from '../../context/form-ingreso/tiposTrabajoContext.jsx';
-import { ROLES_PERMITIDOS_EDITAR_TECNICO } from '../../utils/form-ingreso/roles.js';
+import { ClientesProvider } from '@context/form-ingreso/clientesContext.jsx';
+import { EquiposProvider } from '@context/form-ingreso/equiposContext.jsx'; // 👈 AÑADIDO
+import { TecnicosProvider } from '@context/form-ingreso/tecnicosContext.jsx';
+import { TiposTrabajoProvider } from '@context/form-ingreso/tiposTrabajoContext.jsx';
+import { ROLES_PERMITIDOS_EDITAR_TECNICO } from '@utils/form-ingreso/roles.js';
 
-import { PersistSwitch } from '../PersistenSwitch.jsx';
-import { ClienteSection } from './ClienteSection.jsx';
-import Collapsible from './Collapsible.jsx';
-import { EquipoSection } from './EquipoSection.jsx';
-import { OrdenServicio } from './OrdenServicioSection.jsx';
+import { PersistSwitch } from '@components/PersistenSwitch.jsx';
+import { ClienteSection } from '@components/form-ingreso/ClienteSection.jsx';
+import Collapsible from '@components/form-ingreso/Collapsible.jsx';
+import { EquipoSection } from '@components/form-ingreso/EquipoSection.jsx';
+import { OrdenServicio } from '@components/form-ingreso/OrdenServicioSection.jsx';
 
 function IngresoFormContent({ onSubmit, role }) {
   const { cliente, equipo, tecnico, orden, originalRef, submitAndClear } =

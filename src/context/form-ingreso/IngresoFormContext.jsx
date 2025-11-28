@@ -11,14 +11,14 @@ import {
   useState,
 } from 'react';
 
-import { useAutosave } from '../../hooks/useAutosave';
+import { useAutosave } from '@hooks/useAutosave';
 
 // Lookup contexts
-import { log } from '../../utils/form-ingreso/log';
-import { useClientes } from './clientesContext';
-import { useEquipos } from './equiposContext';
-import { useTecnicos } from './tecnicosContext';
-import { useTiposTrabajo } from './tiposTrabajoContext';
+import { log } from '@utils/form-ingreso/log';
+import { useClientes } from '@context/form-ingreso/clientesContext';
+import { useEquipos } from '@context/form-ingreso/equiposContext';
+import { useTecnicos } from '@context/form-ingreso/tecnicosContext';
+import { useTiposTrabajo } from '@context/form-ingreso/tiposTrabajoContext';
 
 const LS_KEY = 'formIngresoAutosave_v3';
 const LS_PERSIST = 'formPersistEnabled_v1';

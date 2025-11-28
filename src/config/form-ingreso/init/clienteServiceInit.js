@@ -1,6 +1,6 @@
-import { inicializarClienteService } from '../../../service/form-ingreso/clientes/ClienteService';
-import { proveedorClientes } from '../entorno';
-import { mapaProveedoresClientes } from '../proveedores';
+import { inicializarClienteService } from '@services/form-ingreso/clientes/ClienteService';
+import { proveedorClientes } from '@config/form-ingreso/entorno';
+import { mapaProveedoresClientes } from '@config/form-ingreso/proveedores';
 
 const proveedorSeleccionado = mapaProveedoresClientes[proveedorClientes];
 

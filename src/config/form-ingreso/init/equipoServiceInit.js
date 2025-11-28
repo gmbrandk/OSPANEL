@@ -1,7 +1,7 @@
 // initEquipos.js (o donde inicializas servicios)
-import { inicializarEquiposService } from '../../../service/form-ingreso/equipos/equipoService';
-import { proveedorEquipos } from '../entorno';
-import { mapaProveedoresEquipos } from '../proveedores';
+import { inicializarEquiposService } from '@services/form-ingreso/equipos/equipoService';
+import { proveedorEquipos } from '@config/form-ingreso/entorno';
+import { mapaProveedoresEquipos } from '@config/form-ingreso/proveedores';
 
 const proveedorSeleccionado = mapaProveedoresEquipos[proveedorEquipos];
 

@@ -1,5 +1,5 @@
 import '../styles/OSPreview.css';
-import OSPreviewPDFWrapper from './OSPreviewPDFWrapper';
+import OSPreviewPDFWrapper from '@components/OSPreviewPDFWrapper';
 
 export default function OSPreview() {
   const orden = {

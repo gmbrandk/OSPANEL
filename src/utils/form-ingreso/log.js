@@ -1,4 +1,4 @@
-import { LogBuffer } from './LogBuffer';
+import { LogBuffer } from '@utils/form-ingreso/LogBuffer';
 
 export const log = (category, ...args) => {
   if (!window.DEBUG) return;

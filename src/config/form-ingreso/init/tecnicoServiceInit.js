@@ -1,7 +1,7 @@
 // initTecnicos.js
-import { inicializarTecnicosService } from '../../../service/form-ingreso/tecnicos/tecnicoService';
-import { proveedorTecnicos } from '../entorno';
-import { mapaProveedoresTecnicos } from '../proveedores';
+import { inicializarTecnicosService } from '@services/form-ingreso/tecnicos/tecnicoService';
+import { proveedorTecnicos } from '@config/form-ingreso/entorno';
+import { mapaProveedoresTecnicos } from '@config/form-ingreso/proveedores';
 
 const proveedorSeleccionado = mapaProveedoresTecnicos[proveedorTecnicos];
 
