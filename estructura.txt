@@ -79,6 +79,7 @@
 │   │       ├── init
 │   │       │   ├── clienteServiceInit.js
 │   │       │   ├── equipoServiceInit.js
+│   │       │   ├── osServiceInit.js
 │   │       │   ├── tecnicoServiceInit.js
 │   │       │   └── tipoTrabajoServiceInit.js
 │   │       └── proveedores.js
@@ -110,8 +111,12 @@
 │   ├── index.css
 │   ├── main.jsx
 │   ├── pages
-│   │   └── IngresoPage.jsx
-│   ├── service
+│   │   └── form-ingreso
+│   │       ├── DevPage.jsx
+│   │       ├── IngresoPage.jsx
+│   │       ├── PayloadPage.jsx
+│   │       └── PreviewPage.jsx
+│   ├── services
 │   │   └── form-ingreso
 │   │       ├── clientes
 │   │       │   ├── clienteService.js
@@ -119,6 +124,10 @@
 │   │       │       └── ... (oculto)
 │   │       ├── equipos
 │   │       │   ├── equipoService.js
+│   │       │   └── providers
+│   │       │       └── ... (oculto)
+│   │       ├── os
+│   │       │   ├── osService.js
 │   │       │   └── providers
 │   │       │       └── ... (oculto)
 │   │       ├── tecnicos
@@ -133,11 +142,18 @@
 │   │   ├── OSPreview.css
 │   │   ├── OSPreview.print.css
 │   │   └── form-ingreso
+│   │       ├── Autocomplete.module.css
+│   │       ├── Buttons.module.css
+│   │       ├── Fieldset.module.css
+│   │       ├── FormIngresoPage.module.css
+│   │       ├── Inputs.module.css
+│   │       ├── LineaServicio.module.css
 │   │       ├── autocomplete.css
 │   │       ├── base.css
 │   │       ├── buttons.css
 │   │       ├── fieldset.css
 │   │       ├── index.css
+│   │       ├── index.js
 │   │       ├── inputs.css
 │   │       ├── layout.css
 │   │       ├── linea-servicio.css
